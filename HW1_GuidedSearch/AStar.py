@@ -41,19 +41,26 @@ class AStar:
 
     def find_path(self) -> list[City]:
 
+        # while current city is not goal
         while self._current_city != self.goal:
+
+            # get new city with lowest total cost
             self._current_city = min(
                 self._open_set.values(),
                 key=lambda city: city.total_cost
             )
 
             del self._open_set[self._current_city.name]
-            
+
             self.add_adjacencies_to_open_set()
 
             self._closed_set[self._current_city.name] = self._current_city
+
+        # we've found goal
+
         self._closed_set[self._current_city.name] = self._current_city
 
+        # build the path, goal to start
         self._path = [self._closed_set[self.goal.name]]
         while self._path[-1].parent:
             self._path.append(self._closed_set[self._path[-1].parent.name])

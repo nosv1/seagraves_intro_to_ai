@@ -62,7 +62,7 @@ def main() -> None:
     # seed = 65204
     random.seed(seed)
 
-
+    # randomly pick start and goal
     start: City = random.choice(list(cities.values()))
     while True:
         goal: City = random.choice(list(cities.values()))
@@ -72,35 +72,35 @@ def main() -> None:
     aStar: AStar = AStar(start, goal)
     aStar.find_path()
 
-    fig, (ax1, ax2) = plt.subplots(1, 2)
+    fig, (full_view_plot, close_up_plot) = plt.subplots(1, 2)
     fig.suptitle(f"Guided search using A* (seed: {seed})")
 
-    # AX1
-    ax1.set_title("Overview")
-    Plot.setup_plot(ax1, cities.values())
-    Plot.set_grid_bounds(ax1, cities.values())
+    # full_view_plot
+    full_view_plot.set_title("Overview")
+    Plot.setup_plot(full_view_plot, cities.values())
+    Plot.set_grid_bounds(full_view_plot, cities.values())
     Plot.plot_cities(
-        ax1, 
+        full_view_plot, 
         [city for city in cities.values() if city not in aStar.path], 
         color="blue"
     )
     Plot.plot_cities(
-        ax1, 
+        full_view_plot, 
         [city for city in aStar.closed_set if city not in aStar.path], 
         color="black"
     )
-    Plot.plot_path(ax1, aStar.path)
+    Plot.plot_path(full_view_plot, aStar.path)
 
-    # AX2
-    ax2.set_title("Close-up of Path")
-    Plot.setup_plot(ax2, cities.values())
-    Plot.set_grid_bounds(ax2, aStar.closed_set)
+    # close_up_plot
+    close_up_plot.set_title("Close-up of Path")
+    Plot.setup_plot(close_up_plot, cities.values())
+    Plot.set_grid_bounds(close_up_plot, aStar.closed_set)
     Plot.plot_cities(
-        ax2, 
+        close_up_plot, 
         [city for city in aStar.closed_set if city not in aStar.path], 
         color="black"
     )
-    Plot.plot_path(ax2, aStar.path)
+    Plot.plot_path(close_up_plot, aStar.path)
     Plot.legend()
 
     plt.show()

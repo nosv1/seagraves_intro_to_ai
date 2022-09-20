@@ -51,7 +51,7 @@ class Plot:
                 plt.Line2D([0], [0], marker='o', color='black', label='start city', markerfacecolor='white', markersize=10),
                 plt.Line2D([0], [0], marker='o', color='black', label='cities on path', markerfacecolor='grey', markersize=10),
                 plt.Line2D([0], [0], marker='o', color='white', label='adjancent cities to path', markerfacecolor='black', markersize=10),
-                plt.Line2D([0], [0], marker='o', color='white', label='known cities', markerfacecolor='blue', markersize=10),
+                plt.Line2D([0], [0], marker='o', color='white', label='all cities', markerfacecolor='blue', markersize=10),
                 plt.Line2D([0], [0], color='blue', lw=2, label='path'),
             ]
         )
