@@ -68,9 +68,16 @@ def get_city_from_user(cities: dict[str, City], start_goal: str) -> City:
             city = None
 
 def main() -> None:
+    """
+    - read coordinates and adjacncies from files
+    - get start and goal cities from user
+    - find path using AStar
+    - plot path
+    """
+    
     ############################################################################
     # Read input files
-    
+
     cities: dict[str, City] = read_coordiantes("coordinates.txt")
     cities = read_adjacencies("Adjacencies.txt", cities)
 
