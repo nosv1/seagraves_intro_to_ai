@@ -70,7 +70,8 @@ def get_city_from_user(cities: dict[str, City], start_goal: str) -> City:
 def main() -> None:
     ############################################################################
     # Read input files
-    cities = read_coordiantes("coordinates.txt")
+    
+    cities: dict[str, City] = read_coordiantes("coordinates.txt")
     cities = read_adjacencies("Adjacencies.txt", cities)
 
     ############################################################################
