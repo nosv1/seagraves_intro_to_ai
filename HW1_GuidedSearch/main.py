@@ -57,7 +57,7 @@ def get_city_from_user(cities: dict[str, City], start_goal: str) -> City:
     """
     Get the city from the user, if the city is not in the list, ask again
     """
-    
+
     city: City = None
     while not city:
         try:
@@ -86,12 +86,11 @@ def main() -> None:
 
     start_city: City = get_city_from_user(cities, "start")
     goal_city: City = None
-    while True:
+    while not goal_city:
         goal_city: City = get_city_from_user(cities, "goal")
         if goal_city == start_city:
             print("Start and goal cities cannot be the same.")
-        else:
-            break
+            goal_city = None
 
     print(f"Distance between start and goal cities: {start_city.distance(goal_city):.2f} miles")
 
