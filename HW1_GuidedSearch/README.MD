@@ -6,12 +6,19 @@
 # Path
 <img src="https://github.com/nosv1/seagraves_intro_to_ai/blob/master/HW1_GuidedSearch/Path.png?raw=true" width="800" />
 
-Don't be impressed by the satellite picture in the plot... It's a static image I roughly copied from some website...  
-I only looked briefly at how to get a satellite picture using an API given coordiantes and a radius, but no luck on first attempt :(
-
 <br>
 
 # File Structure
 main.py imports AStar.py, City.py, and Plot.py  
 AStar.py imports City.py  
 Plot.py imports City.py  
+
+<br>
+
+# Notes
+
+* I would have liked to tried harder at finidng a way to get a satellite iamge given coordinates and a radius. The satellite image seen above is just a static picture that I tried to get close to the overall area.  
+
+* Robotics and Unmanned Systems (MEC_ENGR 459) also goes over path planning. We start out with Dijkstra, then A*, then RRT, but obstacles are included. 
+https://github.com/nosv1/seagraves_unmanned_systems
+<img src="https://github.com/nosv1/seagraves_unmanned_systems/raw/main/HW3/astar_animation.gif?raw=true" width="400" />
