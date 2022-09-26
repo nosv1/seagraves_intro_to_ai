@@ -44,7 +44,7 @@ class AStar:
                 self._current_city.distance(adjacency)
             ) 
             temp_adjacency.city_to_goal_cost = adjacency.distance(self.goal)
-            
+
             # set the parent
             temp_adjacency.parent = self._current_city
 
@@ -57,7 +57,7 @@ class AStar:
             elif adjacency.name not in self._closed_set:
                 self._open_set[adjacency.name] = temp_adjacency
 
-    def find_path(self) -> list[City]:
+    def find_path(self) -> None:
         """
         - while current city is not goal
             - get new city with lowest total cost from open set (F(n) = G(n) + H(n))
