@@ -42,3 +42,5 @@ class City:
             ((self.latitude - other.latitude) * 69) ** 2 + 
             ((self.longitude - other.longitude) * 54.6) ** 2
         ) ** 0.5
+        # https://www.usgs.gov/faqs/how-much-distance-does-degree-minute-and-second-cover-your-maps
+        # suggests 1 degree of latitude is 69 miles and 1 degree of longitude is 54.6 miles

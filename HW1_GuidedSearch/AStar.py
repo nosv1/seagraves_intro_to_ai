@@ -21,13 +21,31 @@ class AStar:
         return self._path
 
     def add_adjacencies_to_open_set(self) -> None:
+        """
+        - for each adjacency
+            - copy adjacency to temp city
+            - get cost from current city to temp city
+            - get cost from temp city to goal
+            - set parent of temp city to current city
+            - if temp city is in open set
+                - if temp city has lower total cost
+                    - update temp city in open set
+            - if temp city is not in closed set
+                - add temp city to open set
+        """
+
         for adjacency in self._current_city.adjacencies.values():
+            # copy adjacency to temp city
             temp_adjacency: City = adjacency.copy()
+
+            # set the costs of temp city
             temp_adjacency.start_to_city_cost = (
                 self._current_city.start_to_city_cost +
                 self._current_city.distance(adjacency)
             ) 
             temp_adjacency.city_to_goal_cost = adjacency.distance(self.goal)
+            
+            # set the parent
             temp_adjacency.parent = self._current_city
 
             # adjacency already in open set, update cost and parent as needed
@@ -40,6 +58,14 @@ class AStar:
                 self._open_set[adjacency.name] = temp_adjacency
 
     def find_path(self) -> list[City]:
+        """
+        - while current city is not goal
+            - get new city with lowest total cost from open set (F(n) = G(n) + H(n))
+            - remove current city from open set
+            - add current city to closed set
+            - add adjacencies to open set
+        - build path from goal to start
+        """
 
         # while current city is not goal
         while self._current_city != self.goal:
@@ -50,14 +76,18 @@ class AStar:
                 key=lambda city: city.total_cost
             )
 
+            # remove current city from open set
             del self._open_set[self._current_city.name]
 
-            self.add_adjacencies_to_open_set()
-
+            # add current city to closed set
             self._closed_set[self._current_city.name] = self._current_city
 
-        # we've found goal
+            # add adjacencies to open set
+            self.add_adjacencies_to_open_set()
 
+        # goal has been found
+
+        # add current city to closed set for the sake of bookkeeping
         self._closed_set[self._current_city.name] = self._current_city
 
         # build the path, goal to start

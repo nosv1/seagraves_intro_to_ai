@@ -54,6 +54,10 @@ def read_adjacencies(filename: str, cities: dict[str, City]) -> dict[str, City]:
     return cities
 
 def get_city_from_user(cities: dict[str, City], start_goal: str) -> City:
+    """
+    Get the city from the user, if the city is not in the list, ask again
+    """
+    
     city: City = None
     while not city:
         try:
@@ -71,6 +75,7 @@ def main() -> None:
 
     ############################################################################
     # Get the start and end cities from the user
+
     print("#" * 60)
     print("Available cities:")
     for i, city in enumerate(cities.values()):
