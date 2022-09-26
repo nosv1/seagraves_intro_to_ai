@@ -39,6 +39,6 @@ class City:
         Calculates the ecuclidean distance between two nodes
         """
         return (
-            (self.latitude - other.latitude) ** 2 + 
-            (self.longitude - other.longitude) ** 2
+            ((self.latitude - other.latitude) * 69) ** 2 + 
+            ((self.longitude - other.longitude) * 54.6) ** 2
         ) ** 0.5
