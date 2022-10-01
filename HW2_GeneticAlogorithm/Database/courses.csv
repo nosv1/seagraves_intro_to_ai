@@ -1,0 +1,12 @@
+name,expected_enrollment,preferred_instructor_1,preferred_instructor_2,preferred_instructor_3,preferred_instructor_4,preferred_instructor_5,preferred_instructor_6,preferred_instructor_7,preferred_instructor_8,preferred_instructor_9,preferred_instructor_10,other_instructor_1,other_instructor_2,other_instructor_3,other_instructor_4,other_instructor_5,other_instructor_6,other_instructor_7,other_instructor_8,other_instructor_9,other_instructor_10
+CS101A,50,Gladbach,Gharibi,Hare,Zein el Din,,,,,,,Zaman,Nait-Abdesselam,,,,,,,,
+CS101B,50,Gladbach,Gharibi,Hare,Zein el Din,,,,,,,Zaman,Nait-Abdesselam,,,,,,,,
+CS191A,50,Gladbach,Gharibi,Hare,Zein el Din,,,,,,,Zaman,Nait-Abdesselam,,,,,,,,
+CS191B,50,Gladbach,Gharibi,Hare,Zein el Din,,,,,,,Zaman,Nait-Abdesselam,,,,,,,,
+CS201,50,Gladbach,Hare,Zein el Din,Shah,,,,,,,Zaman,Nait-Abdesselam,Song,,,,,,,
+CS291,50,Gharibi,Hare,Zein el Din,Song,,,,,,,Zaman,Nait-Abdesselam,Shah,Xu,,,,,,
+CS303,60,Gladbach,Zein el Din,Hare,,,,,,,,Zaman,Song,Shah,,,,,,,
+CS304,25,Gladbach,Hare,Xu,,,,,,,,Zaman,Song,Shah,Nait-Abdesselam,Uddin,Zein el Din,,,,
+CS394,20,Xu,Song,,,,,,,,,Nait-Abdesselam,Zein el Din,,,,,,,,
+CS449,60,Xu,Song,Shah,,,,,,,,Zein el Din,Uddin,,,,,,,,
+CS451,100,Xu,Song,Shah,,,,,,,,Zein el Din,Uddin,Nait-Abdesselam,Hare,,,,,,
