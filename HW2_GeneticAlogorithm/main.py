@@ -3,8 +3,10 @@
 
 # python imports
 from datetime import datetime, timedelta
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import pandas as pd
-from random import choice
+from random import choice, random
 
 # GeneticAlgorithm imports
 from GeneticAlgorithm.Chromosome import Chromosome
@@ -16,6 +18,9 @@ from ClassTime import ClassTime
 from Course import Course
 from Instructor import Instructor
 from Room import Room
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Convert DataFrames to lists of objects
 
 def create_courses(courses_dataframe: pd.DataFrame) -> list[Course]: 
     courses: list[Course] = []
@@ -58,23 +63,62 @@ def create_instructors(instructors_dataframe: pd.DataFrame) -> list[Instructor]:
         instructors.append(instructor)
     return instructors
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Generate Genes
+
+def generate_course_gene(course: Course) -> Gene:
+    return course
+
+def generate_room_gene(rooms: list[Room]) -> Gene:
+    return choice(rooms)
+    
+def generate_class_time_gene(class_times: list[ClassTime]) -> Gene:
+    return choice(class_times)
+
+def generate_instructor_gene(instructors: list[Instructor]) -> Gene:
+    return choice(instructors)
+
 def generate_chromosomes(
-    courses: list[Course], 
-    class_times: list[ClassTime], 
-    rooms: list[Room],
-    instructors: list[Instructor],
+    possible_genes: dict[type, list[Gene]],
     count: int=1
 ) -> list[Chromosome]:
     chromosomes: list[Chromosome] = []
     for i in range(count):
         chromosome: Chromosome = Chromosome(genes=[])
-        for course in courses:
-            chromosome.genes.append(course)
-            chromosome.genes.append(choice(rooms))
-            chromosome.genes.append(choice(class_times))
-            chromosome.genes.append(choice(instructors))
+        for course in possible_genes[Course]:
+            chromosome.genes.append(generate_course_gene(course))
+            chromosome.genes.append(generate_class_time_gene(possible_genes[ClassTime]))
+            chromosome.genes.append(generate_instructor_gene(possible_genes[Instructor]))
+            chromosome.genes.append(generate_room_gene(possible_genes[Room]))
         chromosomes.append(chromosome)
     return chromosomes
+
+def mutate_chromosome(
+    chromosome: Chromosome,
+    mutation_rate: float, 
+    possible_genes: dict[type, list[Gene]]
+) -> Chromosome:
+    """
+    Creates a new chromosome by randomly selecting genes from the parents.
+    """
+    mutation: Chromosome = Chromosome(genes=[])
+    for i, gene in enumerate(chromosome.genes):
+        if random() < mutation_rate:
+            if isinstance(gene, Course):
+                # Course's encode the current sub-chromosome;
+                # We don't change them.
+                pass
+            elif isinstance(gene, ClassTime):
+                gene = generate_class_time_gene(possible_genes[ClassTime])
+            elif isinstance(gene, Instructor):
+                gene = generate_instructor_gene(possible_genes[Instructor])
+            elif isinstance(gene, Room):
+                gene = generate_room_gene(possible_genes[Room])
+        mutation.genes.append(gene)
+    return mutation
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Evaluate Chromosome
 
 def evaluate_chromosome(chromosome: Chromosome) -> float:
 
@@ -118,12 +162,15 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
         - Otherwise +0.3
         """
         course: Course = None
+        room: Room = None
         for gene in chromosome.genes:
             if isinstance(gene, Course):
                 course = gene
 
             elif isinstance(gene, Room):
                 room = gene
+
+            if room and course:
 
                 if room.capacity < course.expected_enrollment:
                     chromosome.fitness -= 0.5
@@ -137,6 +184,10 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                 else:
                     chromosome.fitness += 0.3
 
+                # set to None so we don't the loop again for the same course
+                course = None
+                room = None
+
     def preferred_instructor_check() -> None:
         """
         Class is taught by a preferred faculty member: +0.5
@@ -144,12 +195,15 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
         Class is taught by some other faculty: -0.1
         """
         course: Course = None
+        instructor: Instructor = None
         for gene in chromosome.genes:
             if isinstance(gene, Course):
                 course = gene
 
             elif isinstance(gene, Instructor):
                 instructor = gene
+
+            if course and instructor:
 
                 if instructor.name in course.preferred_instructors:
                     chromosome.fitness += 0.5
@@ -159,6 +213,10 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
 
                 else:
                     chromosome.fitness -= 0.1
+
+                # set to None so we don't the loop again for the same course
+                course = None
+                instructor = None
         
     def instructor_load_check() -> None:
         """
@@ -191,7 +249,7 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
             elif isinstance(gene, Course):
                 course = gene
 
-            if instructor and class_time:
+            if instructor and class_time and room and course:
                 check_instructor: Instructor = None
                 check_class_time: ClassTime = None
                 check_room: Room = None
@@ -219,7 +277,7 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                     elif isinstance(check_gene, Course):
                         check_course = check_gene
 
-                    if check_instructor and check_class_time:
+                    if check_class_time and check_instructor and check_room and check_course:
                         if (
                             check_instructor == instructor and 
                             check_class_time == class_time
@@ -230,8 +288,8 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                             consecutive_time_slots = True
 
                             if (
-                                room.building in ["Bloch", "Katz"] and
-                                check_room.building not in ["Bloch", "Katz"]
+                                room.building in {"Bloch", "Katz"} and
+                                check_room.building not in {"Bloch", "Katz"}
                             ):
                                 far_away_rooms = True
 
@@ -246,6 +304,7 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                 ## one class one time
                 if one_class_one_time:
                     chromosome.fitness += 0.2
+                ## multiple class same time
                 else:
                     # I THINK by deduction, this makes sense
                     chromosome.fitness -= 0.2
@@ -319,8 +378,8 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                             consecutive_time_slots = True
 
                             if (
-                                room.building in ["Bloch", "Katz"] and
-                                check_room.building not in ["Bloch", "Katz"]
+                                room.building in {"Bloch", "Katz"} and
+                                check_room.building not in {"Bloch", "Katz"}
                             ):
                                 far_away_rooms = True
 
@@ -371,24 +430,47 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
 
     return chromosome
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Display Chromosome
+
 def display_chromosome(chromosome: Chromosome) -> None:
     """
     Displays a chromosome in a readable format.
+    
+    Course: Name
+    Class Time: Start - End hh:mm am/pm
+    Instructor: Name
+    Room: Building (Room) expected/seats  
+
+    \--------------------------------------------------
+    Fitness: 0.00
     """
+    course: Course = None
+    class_time: ClassTime = None
+    instructor: Instructor = None
+    room: Room = None
+    print("-" * 40)
     for gene in chromosome.genes:
         if isinstance(gene, Course):
-            print(f"\n\nCourse: {gene.name}")
+            course = gene
+            print(f"\n\nCourse: {course.name}")
 
         elif isinstance(gene, ClassTime):
-            print(f"Class Time: {gene.start.strftime('%I:%M %p')} - {gene.end.strftime('%I:%M %p')}")
+            class_time = gene
+            print(f"Class Time: {class_time.start.strftime('%I:%M %p')} - {class_time.end.strftime('%I:%M %p')}")
         
         elif isinstance(gene, Instructor):
-            print(f"Instructor: {gene.name}")
+            instructor = gene
+            print(f"Instructor: {instructor.name}")
         
         elif isinstance(gene, Room):
-            print(f"Room: {gene.building} ({gene.room})")
+            room = gene
+            print(f"Room: {gene.building} ({gene.room}) {course.expected_enrollment}/{room.capacity} ({course.expected_enrollment / room.capacity * 100:.2f}% full)")
     print("-" * 40)
     print(f"Fitness: {chromosome.fitness:.2f}")
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# main()
 
 def main() -> None:
     courses: pd.DataFrame = pd.read_csv("Database/courses.csv", dtype=str)
@@ -396,35 +478,61 @@ def main() -> None:
     rooms: pd.DataFrame = pd.read_csv("Database/rooms.csv", dtype=str)
     faculty: pd.DataFrame = pd.read_csv("Database/faculty.csv", dtype=str)
 
-    courses: list[Course] = create_courses(courses)
-    class_times: list[ClassTime] = create_class_times(class_times)
-    rooms: list[Room] = create_rooms(rooms)
-    instructors: list[Instructor] = create_instructors(faculty)
+    possible_genes: dict[type, list[Gene]] = {
+        Course: create_courses(courses),
+        ClassTime: create_class_times(class_times),
+        Room: create_rooms(rooms),
+        Instructor: create_instructors(faculty)
+    }
 
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
-        population_size=10,
-        mutation_rate=0.1,
+        population_size=500,
+        mutation_rate=0.025,
+        possible_genes=possible_genes,
         chromosome_generator=generate_chromosomes,
         chromosome_evaluator=evaluate_chromosome,
         chromosome_displayer=display_chromosome,
+        chromosome_mutator=mutate_chromosome,
     )
 
-    """
-    We lose time converting values to list, but we save time indexing the dict 
-    in the fitness function.
-    """
-    scheduling_ga.initialize_population(
-        count=scheduling_ga.population_size, 
-        courses=courses, 
-        class_times=class_times, 
-        rooms=rooms, 
-        instructors=instructors
-    )
+    fig = plt.figure()
+    average_fitness_subplot = fig.add_subplot(1, 1, 1)
+    standard_deviation_subplot = average_fitness_subplot.twinx()
+    average_fitness_subplot.set_xlabel("Generation")
+    average_fitness_subplot.set_ylabel("Average Fitness")
+    standard_deviation_subplot.set_ylabel("Standard Deviation")
+
+    scheduling_ga.initialize_population(count=scheduling_ga.population_size)
+    for i in range(20):
+        print(f"\nGeneration {i}")
+        scheduling_ga.evaluate_chromosomes()
+
+        scheduling_ga.calculate_probabilities()
+        scheduling_ga.create_offspring()
+
+        print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
+        print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
+
+        average_fitness_subplot.plot(i, scheduling_ga.average_fitness, "bo")
+        standard_deviation_subplot.plot(i, scheduling_ga.standard_deviation, "ro")
+
     scheduling_ga.evaluate_chromosomes()
+    scheduling_ga.display_chromosome(
+        max(scheduling_ga.population, key=lambda chromosome: chromosome.fitness)
+    )
 
-    scheduling_ga.display_chromosome(scheduling_ga.population[0])
+    print(f"\nGeneration {i+1}")
+    print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
+    print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
 
-    return
+    average_fitness_subplot.legend(
+        handles=[
+            mpatches.Patch(color="blue", label="Average Fitness"),
+            mpatches.Patch(color="red", label="Standard Deviation")
+        ]
+    )
+
+    plt.show()
 
 if __name__ == "__main__":
     main()
