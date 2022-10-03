@@ -2,6 +2,7 @@
 # Course Scheduling with a Genetic Algorithm
 
 # python imports
+from dataclasses import dataclass, fields
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -120,7 +121,7 @@ def mutate_chromosome(
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Evaluate Chromosome
 
-def evaluate_chromosome(chromosome: Chromosome) -> float:
+def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
     """
     The idea with these checks is to loop through the genes, storing the 
@@ -128,6 +129,39 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
     stored values.
     We KNOW Course goes first, but the order of the following genes isn't a given.
     """
+
+    # It should be noted, this dataclass is not needed, but for the sake of 
+    # displaying the data of what checks succeeded and failed, it's useful.
+    @dataclass
+    class Checks:
+        same_room_same_time: float = 0.0
+
+        room_too_small: float = 0.0
+        room_3x_too_big: float = 0.0
+        room_6x_too_big: float = 0.0
+        room_size_sufficient: float = 0.0
+
+        preferred_instructor: float = 0.0
+        other_instructor: float = 0.0
+        other_faculty: float = 0.0
+
+        instructor_one_class_one_time: float = 0.0
+        instructor_two_classes_one_time: float = 0.0
+        instructor_more_than_4_classes: float = 0.0
+        instructor_less_than_3_classes: float = 0.0
+        instructor_consecutive_slots: float = 0.0
+        instructor_consecutive_slots_far_away_rooms: float = 0.0
+
+        cs_101_4_hours_apart: float = 0.0
+        cs_101_same_time: float = 0.0
+        cs_191_4_hours_apart: float = 0.0
+        cs_191_same_time: float = 0.0
+        cs_101_191_consecutive: float = 0.0
+        sections_consecutive_far_away_rooms: float = 0.0
+        cs_101_191_one_hour_apart: float = 0.0
+        cs_101_191_same_time: float = 0.0
+
+    checks: Checks = Checks()
 
     def same_room_same_time_check() -> None:
         """
@@ -151,7 +185,7 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                         rooms[room.key].add(class_time)
 
                     else:
-                        chromosome.fitness -= 0.5
+                        checks.same_room_same_time -= 0.5
     
     def room_size_check() -> None:
         """
@@ -173,16 +207,16 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
             if room and course:
 
                 if room.capacity < course.expected_enrollment:
-                    chromosome.fitness -= 0.5
+                    checks.room_too_small -= 0.5
 
                 elif room.capacity >= course.expected_enrollment * 3:
-                    chromosome.fitness -= 0.2
+                    checks.room_3x_too_big -= 0.2
 
                 elif room.capacity >= course.expected_enrollment * 6:
-                    chromosome.fitness -= 0.4
+                    checks.room_6x_too_big -= 0.4
 
                 else:
-                    chromosome.fitness += 0.3
+                    checks.room_size_sufficient += 0.3
 
                 # set to None so we don't the loop again for the same course
                 course = None
@@ -206,13 +240,13 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
             if course and instructor:
 
                 if instructor.name in course.preferred_instructors:
-                    chromosome.fitness += 0.5
+                    checks.preferred_instructor += 0.5
 
                 elif instructor.name in course.other_instructors:
-                    chromosome.fitness += 0.2
+                    checks.other_instructor += 0.2
 
                 else:
-                    chromosome.fitness -= 0.1
+                    checks.other_faculty -= 0.1
 
                 # set to None so we don't the loop again for the same course
                 course = None
@@ -266,7 +300,8 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
 
                         # This doesn't double count, because we skip loop if 
                         # we're in the same course.
-                        course_count += 1 
+                        if instructor == check_instructor:
+                            course_count += 1 
 
                     elif isinstance(check_gene, ClassTime):
                         check_class_time = check_gene
@@ -295,30 +330,32 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
 
                 ## course count
                 if course_count > 4:
-                    chromosome.fitness -= 0.5
+                    checks.instructor_more_than_4_classes -= 0.5
 
                 elif course_count < 3:
                     if instructor.name != "Xu":
-                        chromosome.fitness -= 0.4
+                        checks.instructor_less_than_3_classes -= 0.4
 
                 ## one class one time
                 if one_class_one_time:
-                    chromosome.fitness += 0.2
+                    checks.instructor_one_class_one_time += 0.2
                 ## multiple class same time
                 else:
                     # I THINK by deduction, this makes sense
-                    chromosome.fitness -= 0.2
+                    checks.instructor_two_classes_one_time -= 0.2
 
                 ## consecutive time slots
                 if consecutive_time_slots:
                     if far_away_rooms:
-                        chromosome.fitness -= 0.4
+                        checks.instructor_consecutive_slots_far_away_rooms -= 0.4
                     else:
-                        chromosome.fitness += 0.5
+                        checks.instructor_consecutive_slots += 0.5
 
                 # set to None so we don't the loop again for the same course
                 instructor = None
                 class_time = None
+                room = None
+                course = None
 
     def course_specific_check() -> None:
         """
@@ -396,15 +433,15 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                         ):
                             if consecutive_time_slots:
                                 if far_away_rooms:
-                                    chromosome.fitness -= 0.4
+                                    checks.sections_consecutive_far_away_rooms -= 0.4
                                 else:
-                                    chromosome.fitness += 0.5
+                                    checks.cs_101_191_consecutive_slots += 0.5
 
                             elif one_hour_gap:
-                                chromosome.fitness += 0.25
+                                checks.cs_101_191_one_hour_apart += 0.25
 
                             elif same_time:
-                                chromosome.fitness -= 0.25
+                                checks.cs_101_191_same_time -= 0.25
 
                         # both sections
                         elif (
@@ -412,10 +449,19 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
                             "CS191" in course.name and "CS191" in check_course.name
                         ):
                             if same_time:
-                                chromosome.fitness -= 0.5
+                                # These could be condensed if we weren't storing
+                                # info on what specific course.
+                                if "CS101" in course.name:
+                                    checks.cs_101_same_time -= 0.5
+                                elif "CS191" in course.name:
+                                    checks.cs_191_same_time -= 0.5
 
                             elif four_hour_gap:
-                                chromosome.fitness += 0.5
+                                if "CS101" in course.name:
+                                    checks.cs_101_4_hours_apart += 0.5
+                                elif "CS191" in course.name:
+                                    checks.cs_191_4_hours_apart += 0.5
+                                
 
                 # set to None so we don't the loop again for the same course
                 course = None
@@ -427,6 +473,17 @@ def evaluate_chromosome(chromosome: Chromosome) -> float:
     preferred_instructor_check()
     instructor_load_check()
     course_specific_check()
+
+    for check in fields(checks):
+        attr: float = getattr(checks, check.name)
+        chromosome.fitness += attr
+
+        if print_checks:
+            print(f"    {check.name}: {attr:.2f}")
+
+    if print_checks:
+        print("-" * 40)
+        print(f"Fitness: {chromosome.fitness:.2f}")
 
     return chromosome
 
@@ -473,11 +530,13 @@ def display_chromosome(chromosome: Chromosome) -> None:
 # main()
 
 def main() -> None:
+    # read the data
     courses: pd.DataFrame = pd.read_csv("Database/courses.csv", dtype=str)
     class_times: pd.DataFrame = pd.read_csv("Database/class_times.csv", dtype=str)
     rooms: pd.DataFrame = pd.read_csv("Database/rooms.csv", dtype=str)
     faculty: pd.DataFrame = pd.read_csv("Database/faculty.csv", dtype=str)
 
+    # create the objects
     possible_genes: dict[type, list[Gene]] = {
         Course: create_courses(courses),
         ClassTime: create_class_times(class_times),
@@ -485,24 +544,27 @@ def main() -> None:
         Instructor: create_instructors(faculty)
     }
 
+    # initialize the ga
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
         population_size=500,
-        mutation_rate=0.025,
+        mutation_rate=0.05,
         possible_genes=possible_genes,
         chromosome_generator=generate_chromosomes,
         chromosome_evaluator=evaluate_chromosome,
         chromosome_displayer=display_chromosome,
         chromosome_mutator=mutate_chromosome,
     )
+    scheduling_ga.initialize_population(count=scheduling_ga.population_size)
 
+    # setup plot
     fig = plt.figure()
     average_fitness_subplot = fig.add_subplot(1, 1, 1)
     standard_deviation_subplot = average_fitness_subplot.twinx()
     average_fitness_subplot.set_xlabel("Generation")
     average_fitness_subplot.set_ylabel("Average Fitness")
-    standard_deviation_subplot.set_ylabel("Standard Deviation")
+    standard_deviation_subplot.set_ylabel("Standard Deviation", rotation=270, labelpad=15)
 
-    scheduling_ga.initialize_population(count=scheduling_ga.population_size)
+    # run the ga
     for i in range(20):
         print(f"\nGeneration {i}")
         scheduling_ga.evaluate_chromosomes()
@@ -517,13 +579,16 @@ def main() -> None:
         standard_deviation_subplot.plot(i, scheduling_ga.standard_deviation, "ro")
 
     scheduling_ga.evaluate_chromosomes()
-    scheduling_ga.display_chromosome(
-        max(scheduling_ga.population, key=lambda chromosome: chromosome.fitness)
-    )
 
     print(f"\nGeneration {i+1}")
     print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
     print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
+
+    fittest_chromosome: Chromosome = scheduling_ga.fittest_chromosome
+    scheduling_ga.display_chromosome(fittest_chromosome)
+    print("\nChecks:")
+    fittest_chromosome.fitness = 0
+    evaluate_chromosome(fittest_chromosome, print_checks=True)
 
     average_fitness_subplot.legend(
         handles=[

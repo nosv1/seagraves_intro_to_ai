@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from math import e
 from statistics import mean, stdev
-from random import random
+from random import choices
 from typing import Callable
 
 from .Chromosome import Chromosome
@@ -41,6 +41,13 @@ class GeneticAlgorithm:
     def standard_deviation(self) -> float:
         return self.__standard_deviation
 
+    @property
+    def fittest_chromosome(self) -> Chromosome:
+        return max(self.population, key=lambda c: c.fitness)
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # generate chromosomes
+
     def generate_chromosomes(self, count: int=1, **kwargs) -> None:
         return self.chromosome_generator(
             count=count, possible_genes=self.possible_genes, **kwargs
@@ -49,13 +56,13 @@ class GeneticAlgorithm:
     def initialize_population(self, **kwargs) -> None:
         self.population = self.generate_chromosomes(**kwargs)
 
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # evaluate chromosomes
+
     def evaluate_chromosomes(self) -> None:
         [self.chromosome_evaluator(c) for c in self.population]
         self.__average_fitness = mean([c.fitness for c in self.population])
         self.__standard_deviation = stdev([c.fitness for c in self.population])
-
-    def display_chromosome(self, chromosome: Chromosome) -> None:
-        self.chromosome_displayer(chromosome)
 
     def calculate_probabilities(self) -> None:
         """
@@ -65,21 +72,31 @@ class GeneticAlgorithm:
         self.probablities = [e ** c.fitness for c in self.population]
         sum_probabilities: float = sum(self.probablities)
         self.probablities = [p / sum_probabilities for p in self.probablities]
-        self.probablities.sort()
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # create offspring
 
     def create_offspring(self) -> None:
         """
         Creates the offspring using the Birther, then fill the population with
         the random chromosomes.
         """
-        for i in range(self.population_size):
-            r = random()
-            for j, p in enumerate(self.probablities):
-                min_p = 0 if not j else self.probablities[j-1]
-                if min_p <= r < p:
-                    self.population[i] = self.chromosome_mutator(
-                        chromosome=self.population[j],
-                        mutation_rate=self.mutation_rate,
-                        possible_genes=self.possible_genes
-                    )
-                    break
+        self.population = [
+            self.chromosome_mutator(
+                chromosome=chromosome,
+                mutation_rate=self.mutation_rate,
+                possible_genes=self.possible_genes
+            ) 
+            for chromosome 
+            in choices(
+                population=self.population,
+                weights=self.probablities,
+                k=self.population_size
+            )
+        ]
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # display choromosomes
+
+    def display_chromosome(self, chromosome: Chromosome) -> None:
+        self.chromosome_displayer(chromosome)
