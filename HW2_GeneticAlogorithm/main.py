@@ -435,7 +435,7 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
                                 if far_away_rooms:
                                     checks.sections_consecutive_far_away_rooms -= 0.4
                                 else:
-                                    checks.cs_101_191_consecutive_slots += 0.5
+                                    checks.cs_101_191_consecutive += 0.5
 
                             elif one_hour_gap:
                                 checks.cs_101_191_one_hour_apart += 0.25
@@ -546,7 +546,7 @@ def main() -> None:
 
     # initialize the ga
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
-        population_size=500,
+        population_size=750,
         mutation_rate=0.05,
         possible_genes=possible_genes,
         chromosome_generator=generate_chromosomes,
@@ -563,9 +563,15 @@ def main() -> None:
     average_fitness_subplot.set_xlabel("Generation")
     average_fitness_subplot.set_ylabel("Average Fitness")
     standard_deviation_subplot.set_ylabel("Standard Deviation", rotation=270, labelpad=15)
+    average_fitness_subplot.legend(
+        handles=[
+            mpatches.Patch(color="blue", label="Average Fitness"),
+            mpatches.Patch(color="red", label="Standard Deviation")
+        ]
+    )
 
     # run the ga
-    for i in range(40):
+    for i in range(30):
         print(f"\nGeneration {i}")
         scheduling_ga.evaluate_chromosomes()
 
@@ -574,6 +580,9 @@ def main() -> None:
 
         print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
         print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
+
+        # plot box plot
+        # average_fitness_subplot.boxplot(scheduling_ga.fitnesses, positions=[i])
 
         average_fitness_subplot.plot(i, scheduling_ga.average_fitness, "bo")
         standard_deviation_subplot.plot(i, scheduling_ga.standard_deviation, "ro")
@@ -589,13 +598,6 @@ def main() -> None:
     print("\nChecks:")
     fittest_chromosome.fitness = 0
     evaluate_chromosome(fittest_chromosome, print_checks=True)
-
-    average_fitness_subplot.legend(
-        handles=[
-            mpatches.Patch(color="blue", label="Average Fitness"),
-            mpatches.Patch(color="red", label="Standard Deviation")
-        ]
-    )
 
     plt.show()
 
