@@ -132,6 +132,7 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
     # It should be noted, this dataclass is not needed, but for the sake of 
     # displaying the data of what checks succeeded and failed, it's useful.
+    # Without this, we could juste update chromosome.fitness when we do the checks.
     @dataclass
     class Checks:
         same_room_same_time: float = 0.0
