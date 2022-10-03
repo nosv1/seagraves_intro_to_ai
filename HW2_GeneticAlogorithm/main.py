@@ -107,7 +107,7 @@ def mutate_chromosome(
         if random() < mutation_rate:
             if isinstance(gene, Course):
                 # Course's encode the current sub-chromosome;
-                # We don't change them.
+                # we don't change them.
                 pass
             elif isinstance(gene, ClassTime):
                 gene = generate_class_time_gene(possible_genes[ClassTime])
@@ -565,7 +565,7 @@ def main() -> None:
     standard_deviation_subplot.set_ylabel("Standard Deviation", rotation=270, labelpad=15)
 
     # run the ga
-    for i in range(20):
+    for i in range(40):
         print(f"\nGeneration {i}")
         scheduling_ga.evaluate_chromosomes()
 
