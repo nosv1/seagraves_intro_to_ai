@@ -27,8 +27,9 @@ class GeneticAlgorithm:
         self.chromosome_displayer = chromosome_displayer
         self.chromosome_mutator = chromosome_mutator
 
-        self.population: list[Chromosome] = []
-        self.probablities: list[float] = []
+        self.__population: list[Chromosome] = []
+        self.__probablities: list[float] = []
+        self.__fitnesses: list[float] = []
 
         self.__average_fitness: float = None
         self.__standard_deviation: float = None
@@ -42,8 +43,12 @@ class GeneticAlgorithm:
         return self.__standard_deviation
 
     @property
+    def fitnesses(self) -> list[float]:
+        return self.__fitnesses
+
+    @property
     def fittest_chromosome(self) -> Chromosome:
-        return max(self.population, key=lambda c: c.fitness)
+        return max(self.__population, key=lambda c: c.fitness)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
     # generate chromosomes
@@ -54,34 +59,39 @@ class GeneticAlgorithm:
         )
 
     def initialize_population(self, **kwargs) -> None:
-        self.population = self.generate_chromosomes(**kwargs)
+        self.__population = self.generate_chromosomes(**kwargs)
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
     # evaluate chromosomes
 
     def evaluate_chromosomes(self) -> None:
-        [self.chromosome_evaluator(c) for c in self.population]
-        self.__average_fitness = mean([c.fitness for c in self.population])
-        self.__standard_deviation = stdev([c.fitness for c in self.population])
+        """
+        Assign a fitness value to each chromosome in the population.
+        """
+        [self.chromosome_evaluator(c) for c in self.__population]
+
+        self.__fitnesses: list[float] = [c.fitness for c in self.__population]
+        self.__average_fitness = mean(self.fitnesses)
+        self.__standard_deviation = stdev(self.fitnesses)
 
     def calculate_probabilities(self) -> None:
         """
-        Calculates the probability of a chromosome being selected as a survivor
-        using Softmax function.
+        Calculates a probability distribution of the chromosomes.
         """
-        self.probablities = [e ** c.fitness for c in self.population]
-        sum_probabilities: float = sum(self.probablities)
-        self.probablities = [p / sum_probabilities for p in self.probablities]
+        # Note, the order of the distribution aligns with the population.
+        probablities: list[float] = [e ** c.fitness for c in self.__population]
+        sum_probabilities: float = sum(probablities)
+        self.probablities = [p / sum_probabilities for p in probablities]
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
     # create offspring
 
     def create_offspring(self) -> None:
         """
-        Creates the offspring using the Birther, then fill the population with
-        the random chromosomes.
+        Create a new population using the probability distribution to randomly
+        select chromosomes, and then try to mutate them.
         """
-        self.population = [
+        self.__population = [
             self.chromosome_mutator(
                 chromosome=chromosome,
                 mutation_rate=self.mutation_rate,
@@ -89,7 +99,7 @@ class GeneticAlgorithm:
             ) 
             for chromosome 
             in choices(
-                population=self.population,
+                population=self.__population,
                 weights=self.probablities,
                 k=self.population_size
             )
