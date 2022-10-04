@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import pandas as pd
 from random import choice, random
+import sys
 
 # GeneticAlgorithm imports
 from GeneticAlgorithm.Chromosome import Chromosome
@@ -530,7 +531,7 @@ def display_chromosome(chromosome: Chromosome) -> None:
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # main()
 
-def main() -> None:
+def main(args: list[str]) -> None:
     # read the data
     courses: pd.DataFrame = pd.read_csv("Database/courses.csv", dtype=str)
     class_times: pd.DataFrame = pd.read_csv("Database/class_times.csv", dtype=str)
@@ -544,6 +545,8 @@ def main() -> None:
         Room: create_rooms(rooms),
         Instructor: create_instructors(faculty)
     }
+
+    unittest(possible_genes)
 
     # initialize the ga
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
@@ -602,5 +605,133 @@ def main() -> None:
 
     plt.show()
 
+def unittest(possible_genes: dict[type, list[Gene]]) -> None:
+    """
+    Course: CS101A
+    Class Time: 11:00 AM - 11:50 AM
+    Instructor: Zein el Din
+    Room: Bloch (119) 50/60 (83.33% full)
+
+
+    Course: CS101B
+    Class Time: 12:00 PM - 12:50 PM
+    Instructor: Zaman
+    Room: Haag (301) 50/75 (66.67% full)
+
+
+    Course: CS191A
+    Class Time: 10:00 AM - 10:50 AM
+    Instructor: Gharibi
+    Room: FH (310) 50/108 (46.30% full)
+
+
+    Course: CS191B
+    Class Time: 03:00 PM - 03:50 PM
+    Instructor: Xu
+    Room: Bloch (119) 50/60 (83.33% full)
+
+
+    Course: CS201
+    Class Time: 01:00 PM - 01:50 PM
+    Instructor: Shah
+    Room: Bloch (119) 50/60 (83.33% full)
+
+
+    Course: CS291
+    Class Time: 10:00 AM - 10:50 AM
+    Instructor: Uddin
+    Room: MNLC (325) 50/450 (11.11% full)
+
+
+    Course: CS303
+    Class Time: 02:00 PM - 02:50 PM
+    Instructor: Zein el Din
+    Room: FH (216) 60/30 (200.00% full)
+
+
+    Course: CS304
+    Class Time: 10:00 AM - 10:50 AM
+    Instructor: Nait-Abdesselam
+    Room: Haag (301) 25/75 (33.33% full)
+
+
+    Course: CS394
+    Class Time: 02:00 PM - 02:50 PM
+    Instructor: Xu
+    Room: FH (216) 20/30 (66.67% full)
+
+
+    Course: CS449
+    Class Time: 03:00 PM - 03:50 PM
+    Instructor: Xu
+    Room: Katz (003) 60/45 (133.33% full)
+
+
+    Course: CS451
+    Class Time: 12:00 PM - 12:50 PM
+    Instructor: Xu
+    Room: MNLC (325) 100/450 (22.22% full)
+    """
+    chromosome: Chromosome = Chromosome(genes=[])
+    chromosome.genes = [
+        possible_genes[Course][0],
+        ClassTime(datetime(2020, 1, 1, 11, 0), datetime(2020, 1, 1, 11, 50)),
+        Instructor("Zein el Din"),
+        Room("Bloch", "119", 60),
+
+        possible_genes[Course][1],
+        ClassTime(datetime(2020, 1, 1, 12, 0), datetime(2020, 1, 1, 12, 50)),
+        Instructor("Zaman"),
+        Room("Haag", "301", 75),
+
+        possible_genes[Course][2],
+        ClassTime(datetime(2020, 1, 1, 10, 0), datetime(2020, 1, 1, 10, 50)),
+        Instructor("Gharibi"),
+        Room("FH", "310", 108),
+
+        possible_genes[Course][3],
+        ClassTime(datetime(2020, 1, 1, 15, 0), datetime(2020, 1, 1, 15, 50)),
+        Instructor("Xu"),
+        Room("Bloch", "119", 60),
+
+        possible_genes[Course][4],
+        ClassTime(datetime(2020, 1, 1, 13, 0), datetime(2020, 1, 1, 13, 50)),
+        Instructor("Shah"),
+        Room("Bloch", "119", 60),
+
+        possible_genes[Course][5],
+        ClassTime(datetime(2020, 1, 1, 10, 0), datetime(2020, 1, 1, 10, 50)),
+        Instructor("Uddin"),
+        Room("MNLC", "325", 450),
+
+        possible_genes[Course][6],
+        ClassTime(datetime(2020, 1, 1, 14, 0), datetime(2020, 1, 1, 14, 50)),
+        Instructor("Zein el Din"),
+        Room("FH", "216", 30),
+
+        possible_genes[Course][7],
+        ClassTime(datetime(2020, 1, 1, 10, 0), datetime(2020, 1, 1, 10, 50)),
+        Instructor("Nait-Abdesselam"),
+        Room("Haag", "301", 75),
+
+        possible_genes[Course][8],
+        ClassTime(datetime(2020, 1, 1, 14, 0), datetime(2020, 1, 1, 14, 50)),
+        Instructor("Xu"),
+        Room("FH", "216", 30),
+
+        possible_genes[Course][9],
+        ClassTime(datetime(2020, 1, 1, 15, 0), datetime(2020, 1, 1, 15, 50)),
+        Instructor("Xu"),
+        Room("Katz", "003", 45),
+
+        possible_genes[Course][10],
+        ClassTime(datetime(2020, 1, 1, 12, 0), datetime(2020, 1, 1, 12, 50)),
+        Instructor("Xu"),
+        Room("MNLC", "325", 450)
+    ]
+    evaluate_chromosome(chromosome, print_checks=False)
+    assert chromosome.fitness == 5.9
+
 if __name__ == "__main__":
-    main()
+    args: list[str] = sys.argv[1:]
+    main(args)

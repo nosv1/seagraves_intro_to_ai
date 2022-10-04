@@ -50,6 +50,10 @@ class GeneticAlgorithm:
     def fittest_chromosome(self) -> Chromosome:
         return max(self.__population, key=lambda c: c.fitness)
 
+    @property
+    def population(self) -> list[Chromosome]:
+        return self.__population
+
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
     # generate chromosomes
 
