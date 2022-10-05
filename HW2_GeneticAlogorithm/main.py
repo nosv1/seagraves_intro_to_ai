@@ -188,6 +188,9 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
                     else:
                         checks.same_room_same_time -= 0.5
+                        # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+                        # checks.same_room_same_time -= 10.0
+
     
     def room_size_check() -> None:
         """
@@ -210,6 +213,8 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
                 if room.capacity < course.expected_enrollment:
                     checks.room_too_small -= 0.5
+                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+                    # checks.room_too_small -= 10.0
 
                 elif room.capacity >= course.expected_enrollment * 3:
                     checks.room_3x_too_big -= 0.2
@@ -243,6 +248,8 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
                 if instructor.name in course.preferred_instructors:
                     checks.preferred_instructor += 0.5
+                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+                    # checks.preferred_instructor += 1.0
 
                 elif instructor.name in course.other_instructors:
                     checks.other_instructor += 0.2
@@ -345,6 +352,8 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
                 else:
                     # I THINK by deduction, this makes sense
                     checks.instructor_two_classes_one_time -= 0.2
+                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+                    # checks.instructor_two_classes_one_time -= 10.0
 
                 ## consecutive time slots
                 if consecutive_time_slots:
@@ -438,9 +447,13 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
                                     checks.sections_consecutive_far_away_rooms -= 0.4
                                 else:
                                     checks.cs_101_191_consecutive += 0.5
+                                    # # # # # # # # # # # # # # # # # # # # # # 
+                                    # checks.cs_101_191_consecutive += 1.0
 
                             elif one_hour_gap:
                                 checks.cs_101_191_one_hour_apart += 0.25
+                                # # # # # # # # # # # # # # # # # # # # # # # # 
+                                # checks.cs_101_191_one_hour_apart += 0.5
 
                             elif same_time:
                                 checks.cs_101_191_same_time -= 0.25
@@ -546,11 +559,12 @@ def main(args: list[str]) -> None:
         Instructor: create_instructors(faculty)
     }
 
+    # unit tests
     unittest(possible_genes)
 
     # initialize the ga
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
-        population_size=750,
+        population_size=500,
         mutation_rate=0.05,
         possible_genes=possible_genes,
         chromosome_generator=generate_chromosomes,
@@ -562,38 +576,42 @@ def main(args: list[str]) -> None:
 
     # setup plot
     fig = plt.figure()
-    average_fitness_subplot = fig.add_subplot(1, 1, 1)
-    standard_deviation_subplot = average_fitness_subplot.twinx()
-    average_fitness_subplot.set_xlabel("Generation")
-    average_fitness_subplot.set_ylabel("Average Fitness")
+    fitness_subplot = fig.add_subplot(1, 1, 1)
+    standard_deviation_subplot = fitness_subplot.twinx()
+    fitness_subplot.set_xlabel("Generation")
+    fitness_subplot.set_ylabel("Fitness")
     standard_deviation_subplot.set_ylabel("Standard Deviation", rotation=270, labelpad=15)
-    average_fitness_subplot.legend(
+    fitness_subplot.legend(
         handles=[
+            mpatches.Patch(color="green", label="Fittest Chromosome"),
             mpatches.Patch(color="blue", label="Average Fitness"),
             mpatches.Patch(color="red", label="Standard Deviation")
         ]
     )
 
     # run the ga
-    for i in range(30):
+    for i in range(40):
         print(f"\nGeneration {i}")
         scheduling_ga.evaluate_chromosomes()
 
         scheduling_ga.calculate_probabilities()
         scheduling_ga.create_offspring()
 
+        print(f"Fittest Chromosome: {scheduling_ga.fittest_chromosome.fitness:.2f}")
         print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
         print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
 
         # plot box plot
         # average_fitness_subplot.boxplot(scheduling_ga.fitnesses, positions=[i])
 
-        average_fitness_subplot.plot(i, scheduling_ga.average_fitness, "bo")
+        fitness_subplot.plot(i, scheduling_ga.fittest_chromosome.fitness, "go")
+        fitness_subplot.plot(i, scheduling_ga.average_fitness, "bo")
         standard_deviation_subplot.plot(i, scheduling_ga.standard_deviation, "ro")
 
     scheduling_ga.evaluate_chromosomes()
 
     print(f"\nGeneration {i+1}")
+    print(f"Fittest Chromosome: {scheduling_ga.fittest_chromosome.fitness:.2f}")
     print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
     print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
 
@@ -729,8 +747,9 @@ def unittest(possible_genes: dict[type, list[Gene]]) -> None:
         Instructor("Xu"),
         Room("MNLC", "325", 450)
     ]
-    evaluate_chromosome(chromosome, print_checks=False)
-    assert chromosome.fitness == 5.9
+    # evaluate_chromosome(chromosome, print_checks=True)
+    # assert chromosome.fitness == 5.9
+    # assert chromosome.fitness == -2992.90
 
 if __name__ == "__main__":
     args: list[str] = sys.argv[1:]

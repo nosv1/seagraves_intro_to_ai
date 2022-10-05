@@ -33,6 +33,7 @@ class GeneticAlgorithm:
 
         self.__average_fitness: float = None
         self.__standard_deviation: float = None
+        self.__fittest_chromosome: Chromosome = None
 
     @property
     def average_fitness(self) -> float:
@@ -48,7 +49,7 @@ class GeneticAlgorithm:
 
     @property
     def fittest_chromosome(self) -> Chromosome:
-        return max(self.__population, key=lambda c: c.fitness)
+        return self.__fittest_chromosome
 
     @property
     def population(self) -> list[Chromosome]:
@@ -74,7 +75,18 @@ class GeneticAlgorithm:
         """
         [self.chromosome_evaluator(c) for c in self.__population]
 
-        self.__fitnesses: list[float] = [c.fitness for c in self.__population]
+        # calculate fittest chromosome, mean, and standard deviation
+        self.__fitnesses: list[float] = []
+        self.__fittest_chromosome: Chromosome = Chromosome(genes=[])
+        self.__fittest_chromosome.fitness = float('-inf')
+        for chromosome in self.__population:
+            self.__fitnesses.append(chromosome.fitness)
+            self.__fittest_chromosome = max(
+                self.__fittest_chromosome, chromosome, key=lambda c: c.fitness
+            )
+
+        # self.__fitnesses = [c.fitness for c in self.__population]
+        # self.__fittest_chromosome = max(self.__population, key=lambda c: c.fitness)
         self.__average_fitness = mean(self.fitnesses)
         self.__standard_deviation = stdev(self.fitnesses)
 
