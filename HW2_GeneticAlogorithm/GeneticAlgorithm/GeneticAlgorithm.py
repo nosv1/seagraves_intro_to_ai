@@ -133,6 +133,5 @@ class GeneticAlgorithm:
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
     # write choromosomes to file
 
-    def write_chromosomes_to_file(self, file: TextIOWrapper, **kwargs) -> None:
-        for chromosome in self.population:
-            self.__chromosome_writer(file=file, chromosome=chromosome, **kwargs)
+    def save_chromosome(self, chromosome: Chromosome) -> None:
+        self.__chromosome_writer(chromosome)

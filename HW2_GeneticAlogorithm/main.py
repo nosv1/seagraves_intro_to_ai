@@ -291,10 +291,15 @@ def evaluate_chromosome(
                         check_room = check_gene
 
                     elif isinstance(check_gene, Course):
-                        check_course = check_gene
                         check_instructor = None
                         check_class_time = None
                         check_room = None
+
+                        one_class_one_time = True
+                        consecutive_time_slots = False
+                        far_away_rooms = False
+
+                        check_course = check_gene
 
                     if check_course and course == check_course:
                         continue
@@ -317,7 +322,7 @@ def evaluate_chromosome(
                             ):
                                 far_away_rooms = True
     
-                    check_course = None
+                        check_course = None
 
                 ## consecutive time slots
                 if consecutive_time_slots:
@@ -368,9 +373,10 @@ def evaluate_chromosome(
         room: Room = None
         for gene in chromosome.genes:
             if isinstance(gene, Course):
-                course = gene
                 class_time = None
                 room = None
+
+                course = gene
 
             elif isinstance(gene, ClassTime):
                 class_time = gene
@@ -390,8 +396,6 @@ def evaluate_chromosome(
                 four_hour_gap = False
                 for check_gene in chromosome.genes:
                     if isinstance(check_gene, Course):
-                        check_course = check_gene
-                        
                         check_class_time = None
                         check_room = None
 
@@ -400,6 +404,8 @@ def evaluate_chromosome(
                         same_time = False
                         far_away_rooms = False
                         four_hour_gap = False
+
+                        check_course = check_gene
 
                     elif isinstance(check_gene, ClassTime):
                         check_class_time = check_gene
@@ -465,7 +471,13 @@ def evaluate_chromosome(
                                     chromosome.checks.cs_101_4_hours_apart = 0.5
                                 elif "CS191" in check_course.name:
                                     chromosome.checks.cs_191_4_hours_apart = 0.5
+
+                        check_course = None
+
                 course = None
+
+        chromosome.checks.cs_101_191_same_time /= 2
+        chromosome.checks.cs_101_191_one_hour_apart /= 2
 
     chromosome.checks = chromosome.Checks()
     same_room_same_time_check()
@@ -534,6 +546,188 @@ def write_chromosome_checks_to_file(
     )
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Save Solution
+
+def save_solution(chromosome: Chromosome) -> None:
+    with open("Solution/Courses.txt", "w+") as f:
+        for gene in chromosome.genes:
+            if isinstance(gene, Course):
+                info = gene
+                f.write(f"\n\nCourse: {info.name}\n")
+
+            elif isinstance(gene, ClassTime):
+                class_time = gene
+                f.write(f"Class Time: {class_time.start.strftime('%I:%M %p')} - {class_time.end.strftime('%I:%M %p')}\n")
+            
+            elif isinstance(gene, Instructor):
+                instructor = gene
+                f.write(f"Instructor: {instructor.name}\n")
+            
+            elif isinstance(gene, Room):
+                room = gene
+                f.write(f"Room: {gene.building} ({gene.room}) {info.expected_enrollment}/{room.capacity} ({info.expected_enrollment / room.capacity * 100:.2f}% full)\n")
+
+    with open("Solution/Checks.txt", "w+") as f:
+        for check in fields(chromosome.checks):
+            f.write(f"{check.name}: {getattr(chromosome.checks, check.name):.2f}\n")
+        f.write(f"Fitness: {chromosome.fitness:.2f}")
+
+    with open("Solution/Instructors.txt", "w+") as f:
+        @dataclass
+        class IntstructorInfo:
+            name: str
+            course: Course
+            class_time: ClassTime
+            room: Room
+
+        course: Course = None
+        instructor: Instructor = None
+        room: Room = None
+        class_time: ClassTime = None
+        instructors: dict[str, list[IntstructorInfo]] = {}
+        for gene in chromosome.genes:
+            if isinstance(gene, Course):
+                instructor = None
+                room = None
+                class_time = None
+
+                course = gene
+
+            elif isinstance(gene, ClassTime):
+                class_time = gene
+
+            elif isinstance(gene, Instructor):
+                instructor = gene
+
+            elif isinstance(gene, Room):
+                room = gene
+                
+            if course and instructor and room and class_time:
+                if instructor.name not in instructors:
+                    instructors[instructor.name] = []
+                
+                instructors[instructor.name].append(
+                    IntstructorInfo(
+                        name=instructor.name,
+                        course=course,
+                        class_time=class_time,
+                        room=room
+                    )
+                )
+                
+        for instructor in instructors:
+            instructors[instructor].sort(key=lambda x: x.class_time.start)
+            f.write(f"\nInstructor: {instructor}\n")
+            for info in instructors[instructor]:
+                f.write(f"    Course: {info.course.name}\n")
+                f.write(f"    Class Time: {info.class_time.start.strftime('%I:%M %p')} - {info.class_time.end.strftime('%I:%M %p')}\n")
+                f.write(f"    Room: {info.room.building} ({info.room.room}) {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)\n\n")
+
+    with open("Solution/Rooms.txt", "w+") as f:
+        @dataclass
+        class RoomInfo:
+            course: Course
+            room: Room
+            class_time: ClassTime
+            instructor: Instructor
+
+        course: Course = None
+        instructor: Instructor = None
+        room: Room = None
+        class_time: ClassTime = None
+        rooms: dict[str, list[RoomInfo]] = {}
+        for gene in chromosome.genes:
+            if isinstance(gene, Course):
+                instructor = None
+                room = None
+                class_time = None
+
+                course = gene
+
+            elif isinstance(gene, ClassTime):
+                class_time = gene
+
+            elif isinstance(gene, Instructor):
+                instructor = gene
+
+            elif isinstance(gene, Room):
+                room = gene
+                
+            if course and instructor and room and class_time:
+                if room.key not in rooms:
+                    rooms[room.key] = []
+                
+                rooms[room.key].append(
+                    RoomInfo(
+                        course=course,
+                        room=room,
+                        class_time=class_time,
+                        instructor=instructor
+                    )
+                )
+                
+        for courses in rooms.values():
+            courses.sort(key=lambda x: x.class_time.start)
+            f.write(f"\nRoom: {courses[0].room.building} ({courses[0].room.room})\n")
+            for info in courses:
+                f.write(f"    Class Time: {info.class_time.start.strftime('%I:%M %p')} - {info.class_time.end.strftime('%I:%M %p')}\n")
+                f.write(f"    Course: {info.course.name}\n")
+                f.write(f"    Instructor: {info.instructor.name}\n")
+                f.write(f"    Capacity: {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)\n\n")
+
+    with open("Solution/TimeSlots.txt", "w+") as f:
+        @dataclass
+        class TimeSlotInfo:
+            class_time: ClassTime
+            course: Course
+            instructor: Instructor
+            room: Room
+
+        course: Course = None
+        instructor: Instructor = None
+        room: Room = None
+        class_time: ClassTime = None
+        time_slots: dict[str, list[TimeSlotInfo]] = {}
+        for gene in chromosome.genes:
+            if isinstance(gene, Course):
+                instructor = None
+                room = None
+                class_time = None
+
+                course = gene
+
+            elif isinstance(gene, ClassTime):
+                class_time = gene
+
+            elif isinstance(gene, Instructor):
+                instructor = gene
+
+            elif isinstance(gene, Room):
+                room = gene
+                
+            if course and instructor and room and class_time:
+                if class_time.start not in time_slots:
+                    time_slots[class_time.start] = []
+                
+                time_slots[class_time.start].append(
+                    TimeSlotInfo(
+                        class_time=class_time,
+                        course=course,
+                        instructor=instructor,
+                        room=room
+                    )
+                )
+                
+        time_slots = {k: time_slots[k] for k in sorted(time_slots)}
+        for time_slot in time_slots:
+            time_slots[time_slot].sort(key=lambda x: x.course.name)
+            f.write(f"\nTime Slot: {time_slots[time_slot][0].class_time.start.strftime('%I:%M %p')} - {time_slots[time_slot][0].class_time.end.strftime('%I:%M %p')}\n")
+            for info in time_slots[time_slot]:
+                f.write(f"    Course: {info.course.name}\n")
+                f.write(f"    Instructor: {info.instructor.name}\n")
+                f.write(f"    Room: {info.room.building} ({info.room.room}) {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)\n\n")
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # main()
 
 def main(args: list[str]) -> None:
@@ -551,18 +745,18 @@ def main(args: list[str]) -> None:
         Instructor: create_instructors(faculty)
     }
 
-    # tests(possible_genes=possible_genes)
+    tests(possible_genes=possible_genes)
 
     # initialize the ga
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
-        population_size=500,
+        population_size=1000,
         mutation_rate=0.01,
         possible_genes=possible_genes,
         chromosome_generator=generate_chromosomes,
         chromosome_evaluator=evaluate_chromosome,
         chromosome_displayer=display_chromosome,
         chromosome_mutator=mutate_chromosome,
-        chromosome_writer=write_chromosome_checks_to_file,
+        chromosome_writer=save_solution,
     )
     scheduling_ga.initialize_population(count=scheduling_ga.population_size)
 
@@ -582,8 +776,8 @@ def main(args: list[str]) -> None:
     )
 
     # run the ga
-    minimum_improvement: float = 0.05
-    maximum_generations: int = 50
+    minimum_improvement: float = 0.01
+    maximum_generations: int = 100
     generations: int = 1
     print(f"Starting Genetic Algorithm")
     print(f"Population Size: {scheduling_ga.population_size}")
@@ -634,9 +828,7 @@ def main(args: list[str]) -> None:
     scheduling_ga.display_chromosome(fittest_chromosome)
     print("\nChecks:")
     evaluate_chromosome(fittest_chromosome, print_checks=True)
-
-    with open("chromosome_checks.csv", "w+") as f:
-        scheduling_ga.write_chromosomes_to_file(file=f)
+    scheduling_ga.save_chromosome(fittest_chromosome)
 
     plt.show()
 
@@ -706,7 +898,7 @@ def tests(possible_genes: dict[type, list[Gene]]) -> None:
     assert course_specific_checks.checks.cs_191_same_time == -0.5 * 0
     assert course_specific_checks.checks.cs_101_191_consecutive == 0.5 * 1
     assert course_specific_checks.checks.sections_consecutive_far_away_rooms == -0.4 * 0
-    assert course_specific_checks.checks.cs_101_191_one_hour_apart == 0.25 * 2
+    assert course_specific_checks.checks.cs_101_191_one_hour_apart == 0.25 * 1
     assert course_specific_checks.checks.cs_101_191_same_time == -0.25 * 0
 
     rnd.seed(datetime.now().microsecond)
