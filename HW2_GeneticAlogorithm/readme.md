@@ -17,9 +17,11 @@ main.py sets up the GA and has functions to define how the GA should mutate or c
 - Minimum Generations: 100  
 - Minimum Improvement: 0.01  
 
+<img src="https://github.com/nosv1/seagraves_intro_to_ai/blob/master/HW2_GeneticAlogorithm/GA%201000x100%200o01.png?raw=true">
+
 Alternate views of the solution can be found [here](https://github.com/nosv1/seagraves_intro_to_ai/tree/master/HW2_GeneticAlogorithm/Solution).
 
-**End Fitness: 16.0** 
+## **End Fitness: 16.0** 
 
 **Course: CS101A**  
 Class Time: 02:00 PM - 02:50 PM  
@@ -76,6 +78,32 @@ Class Time: 02:00 PM - 02:50 PM
 Instructor: Song  
 Room: FH (310) 100/108 (92.59% full)  
 
+</br>
+
+## Checks
+same_room_same_time: 0.00  
+room_too_small: 0.00  
+room_3x_too_big: 0.00  
+room_6x_too_big: 0.00  
+room_size_sufficient: 3.30  
+preferred_instructor: 5.50  
+other_instructor: 0.00  
+other_faculty: 0.00  
+instructor_one_class_one_time: 2.20  
+instructor_multiple_classes_one_time: 0.00  
+instructor_more_than_4_classes: 0.00  
+instructor_less_than_3_classes: 0.00  
+instructor_consecutive_slots: 3.50  
+instructor_consecutive_slots_far_away_rooms: 0.00  
+cs_101_4_hours_apart: 0.00  
+cs_101_same_time: 0.00  
+cs_191_4_hours_apart: 0.00  
+cs_191_same_time: -0.50  
+cs_101_191_consecutive: 2.00  
+sections_consecutive_far_away_rooms: 0.00  
+cs_101_191_one_hour_apart: 0.00  
+cs_101_191_same_time: 0.00  
+
 ---
 
 ## Notes and Takeaways
@@ -99,3 +127,4 @@ For the selection, my process was simple, as I imagine the randomness can only b
 - Loop genes of selected chromosomes and randomly mutate them based on mutation rate
 
 This creates a slightly mutated generation from decent chromosomes. That being said, it was suggested a mutaiton rate of 0.01 was too high, however, with minimal mutattion randomness, the starting mutation rate wound up being pretty decent. When I raised the mutation to 0.05, it would produce worse results, and the same was observed when I decreased it to 0.005.
+
