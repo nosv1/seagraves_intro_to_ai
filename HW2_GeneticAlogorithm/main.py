@@ -2,21 +2,26 @@
 # Course Scheduling with a Genetic Algorithm
 
 # python imports
+from copy import deepcopy
 from dataclasses import dataclass, fields
 from datetime import datetime, timedelta
+from io import TextIOWrapper
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import pandas as pd
+import random as rnd
 from random import choice, random
 import sys
 
+
 # GeneticAlgorithm imports
-from GeneticAlgorithm.Chromosome import Chromosome
+# from GeneticAlgorithm.Chromosome import Chromosome
 from GeneticAlgorithm.Gene import Gene
 from GeneticAlgorithm.GeneticAlgorithm import GeneticAlgorithm
 
 # support imports
 from ClassTime import ClassTime
+from Chromosome import Chromosome
 from Course import Course
 from Instructor import Instructor
 from Room import Room
@@ -69,16 +74,16 @@ def create_instructors(instructors_dataframe: pd.DataFrame) -> list[Instructor]:
 # Generate Genes
 
 def generate_course_gene(course: Course) -> Gene:
-    return course
+    return deepcopy(course)
 
 def generate_room_gene(rooms: list[Room]) -> Gene:
-    return choice(rooms)
+    return deepcopy(choice(rooms))
     
 def generate_class_time_gene(class_times: list[ClassTime]) -> Gene:
-    return choice(class_times)
+    return deepcopy(choice(class_times))
 
 def generate_instructor_gene(instructors: list[Instructor]) -> Gene:
-    return choice(instructors)
+    return deepcopy(choice(instructors))
 
 def generate_chromosomes(
     possible_genes: dict[type, list[Gene]],
@@ -122,48 +127,14 @@ def mutate_chromosome(
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # Evaluate Chromosome
 
-def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
+def evaluate_chromosome(
+    chromosome: Chromosome, print_checks: bool = False) -> Chromosome:
+    # The idea with these checks is to loop through the genes, storing the 
+    # values we care about until we get to the next course, then evaluating the 
+    # stored values.
+    # We KNOW Course goes first, but the order of the following genes isn't a given.
 
-    """
-    The idea with these checks is to loop through the genes, storing the 
-    values we care about until we get to the next course, then evaluating the 
-    stored values.
-    We KNOW Course goes first, but the order of the following genes isn't a given.
-    """
-
-    # It should be noted, this dataclass is not needed, but for the sake of 
-    # displaying the data of what checks succeeded and failed, it's useful.
-    # Without this, we could juste update chromosome.fitness when we do the checks.
-    @dataclass
-    class Checks:
-        same_room_same_time: float = 0.0
-
-        room_too_small: float = 0.0
-        room_3x_too_big: float = 0.0
-        room_6x_too_big: float = 0.0
-        room_size_sufficient: float = 0.0
-
-        preferred_instructor: float = 0.0
-        other_instructor: float = 0.0
-        other_faculty: float = 0.0
-
-        instructor_one_class_one_time: float = 0.0
-        instructor_two_classes_one_time: float = 0.0
-        instructor_more_than_4_classes: float = 0.0
-        instructor_less_than_3_classes: float = 0.0
-        instructor_consecutive_slots: float = 0.0
-        instructor_consecutive_slots_far_away_rooms: float = 0.0
-
-        cs_101_4_hours_apart: float = 0.0
-        cs_101_same_time: float = 0.0
-        cs_191_4_hours_apart: float = 0.0
-        cs_191_same_time: float = 0.0
-        cs_101_191_consecutive: float = 0.0
-        sections_consecutive_far_away_rooms: float = 0.0
-        cs_101_191_one_hour_apart: float = 0.0
-        cs_101_191_same_time: float = 0.0
-
-    checks: Checks = Checks()
+    remote_buildings: set[str] = {"Bloch", "Katz"}
 
     def same_room_same_time_check() -> None:
         """
@@ -172,25 +143,31 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
         rooms: dict[str, set[datetime]] = {}
         room: Room = None
         class_time: ClassTime = None
+        course: Course = None
         for gene in chromosome.genes:
             if isinstance(gene, Room):
                 room = gene
-                rooms[room.key] = set()
+                if room.key not in rooms:
+                    rooms[room.key] = set()
 
             elif isinstance(gene, ClassTime):
                 class_time = gene
-                class_time = class_time.start
 
-            elif isinstance(gene, Course):                
-                if room and class_time:
-                    if class_time not in rooms[room.key]:
-                        rooms[room.key].add(class_time)
+            elif isinstance(gene, Course):
+                course = gene
+                room = None
+                class_time = None
 
-                    else:
-                        checks.same_room_same_time -= 0.5
-                        # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
-                        # checks.same_room_same_time -= 10.0
+            if course and room and class_time:
+                if class_time.start not in rooms[room.key]:
+                    rooms[room.key].add(class_time.start)
 
+                else:
+                    chromosome.checks.same_room_same_time -= 0.5
+                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+                    # checks.same_room_same_time -= 10.0
+
+                course = None
     
     def room_size_check() -> None:
         """
@@ -205,6 +182,7 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
         for gene in chromosome.genes:
             if isinstance(gene, Course):
                 course = gene
+                room = None
 
             elif isinstance(gene, Room):
                 room = gene
@@ -212,22 +190,19 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
             if room and course:
 
                 if room.capacity < course.expected_enrollment:
-                    checks.room_too_small -= 0.5
-                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                    # checks.room_too_small -= 10.0
+                    chromosome.checks.room_too_small -= 0.5
 
                 elif room.capacity >= course.expected_enrollment * 3:
-                    checks.room_3x_too_big -= 0.2
+                    chromosome.checks.room_3x_too_big -= 0.2
 
                 elif room.capacity >= course.expected_enrollment * 6:
-                    checks.room_6x_too_big -= 0.4
+                    chromosome.checks.room_6x_too_big -= 0.4
 
                 else:
-                    checks.room_size_sufficient += 0.3
+                    chromosome.checks.room_size_sufficient += 0.3
 
-                # set to None so we don't the loop again for the same course
+                # Skips til next course in chromosome
                 course = None
-                room = None
 
     def preferred_instructor_check() -> None:
         """
@@ -240,6 +215,7 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
         for gene in chromosome.genes:
             if isinstance(gene, Course):
                 course = gene
+                instructor = None
 
             elif isinstance(gene, Instructor):
                 instructor = gene
@@ -247,19 +223,15 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
             if course and instructor:
 
                 if instructor.name in course.preferred_instructors:
-                    checks.preferred_instructor += 0.5
-                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                    # checks.preferred_instructor += 1.0
+                    chromosome.checks.preferred_instructor += 0.5
 
                 elif instructor.name in course.other_instructors:
-                    checks.other_instructor += 0.2
+                    chromosome.checks.other_instructor += 0.2
 
                 else:
-                    checks.other_faculty -= 0.1
+                    chromosome.checks.other_faculty -= 0.1
 
-                # set to None so we don't the loop again for the same course
                 course = None
-                instructor = None
         
     def instructor_load_check() -> None:
         """
@@ -270,18 +242,22 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
         - Instructor is scheduled to teach 1 or 2 classes: -0.4
             -  no penalty for Xu for teaching < 3 courses
         - Consecutive time slots: +0.5
-        - If consective time slots and one class is in Bloch or Katz and the 
-            other isn't: -0.4
+        - If consective time slots and one class is in remote building Bloch or 
+        Katz and the following class in the other remote building: -0.4
         """
         instructor: Instructor = None
         class_time: ClassTime = None
         room: Room = None
         course: Course = None
         course_count: int = 0
-        for gene in chromosome.genes:
+        instructor_counts: dict[str, int] = {}
+        for i, gene in enumerate(chromosome.genes):
             if isinstance(gene, Instructor):
                 instructor = gene
-                course_count = 1
+                if instructor.name not in instructor_counts:
+                    instructor_counts[instructor.name] = 1
+                else:
+                    instructor_counts[instructor.name] += 1
 
             elif isinstance(gene, ClassTime):
                 class_time = gene
@@ -291,26 +267,22 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
             elif isinstance(gene, Course):
                 course = gene
+                instructor = None
+                class_time = None
+                room = None
 
             if instructor and class_time and room and course:
                 check_instructor: Instructor = None
                 check_class_time: ClassTime = None
                 check_room: Room = None
                 check_course: Course = None
+
                 one_class_one_time = True
                 consecutive_time_slots = False
                 far_away_rooms = False
-                for check_gene in chromosome.genes:
-                    if check_course and course == check_course:
-                        continue
-
-                    elif isinstance(check_gene, Instructor):
+                for check_gene in chromosome.genes[i+1:]:
+                    if isinstance(check_gene, Instructor):
                         check_instructor = check_gene
-
-                        # This doesn't double count, because we skip loop if 
-                        # we're in the same course.
-                        if instructor == check_instructor:
-                            course_count += 1 
 
                     elif isinstance(check_gene, ClassTime):
                         check_class_time = check_gene
@@ -320,53 +292,61 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
 
                     elif isinstance(check_gene, Course):
                         check_course = check_gene
+                        check_instructor = None
+                        check_class_time = None
+                        check_room = None
+
+                    if check_course and course == check_course:
+                        continue
 
                     if check_class_time and check_instructor and check_room and check_course:
                         if (
-                            check_instructor == instructor and 
-                            check_class_time == class_time
+                            check_instructor == instructor
+                            and check_class_time == class_time
                         ):
                             one_class_one_time = False
                         
                         if check_class_time.start - class_time.start == timedelta(hours=1):
                             consecutive_time_slots = True
 
+                            # check if we're in a separate remote building
                             if (
-                                room.building in {"Bloch", "Katz"} and
-                                check_room.building not in {"Bloch", "Katz"}
+                                room.building in remote_buildings
+                                and room.building != check_room.building
+                                and check_room.building in remote_buildings
                             ):
                                 far_away_rooms = True
-
-                ## course count
-                if course_count > 4:
-                    checks.instructor_more_than_4_classes -= 0.5
-
-                elif course_count < 3:
-                    if instructor.name != "Xu":
-                        checks.instructor_less_than_3_classes -= 0.4
-
-                ## one class one time
-                if one_class_one_time:
-                    checks.instructor_one_class_one_time += 0.2
-                ## multiple class same time
-                else:
-                    # I THINK by deduction, this makes sense
-                    checks.instructor_two_classes_one_time -= 0.2
-                    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-                    # checks.instructor_two_classes_one_time -= 10.0
+    
+                    check_course = None
 
                 ## consecutive time slots
                 if consecutive_time_slots:
-                    if far_away_rooms:
-                        checks.instructor_consecutive_slots_far_away_rooms -= 0.4
-                    else:
-                        checks.instructor_consecutive_slots += 0.5
 
-                # set to None so we don't the loop again for the same course
-                instructor = None
-                class_time = None
-                room = None
+                    ## far away rooms
+                    if far_away_rooms:
+                        chromosome.checks.instructor_consecutive_slots_far_away_rooms -= 0.4
+                        
+                    else:
+                        chromosome.checks.instructor_consecutive_slots += 0.5
+
+                ## one class one time
+                if one_class_one_time:
+                    chromosome.checks.instructor_one_class_one_time += 0.2
+
+                ## multiple class same time
+                else:
+                    # I THINK by deduction, this makes sense
+                    chromosome.checks.instructor_multiple_classes_one_time -= 0.2
+
                 course = None
+
+        for instructor, count in instructor_counts.items():
+            if count > 4:
+                chromosome.checks.instructor_more_than_4_classes -= 0.5
+
+            elif count < 3:
+                if instructor != "Xu":
+                    chromosome.checks.instructor_less_than_3_classes -= 0.4
 
     def course_specific_check() -> None:
         """
@@ -376,8 +356,8 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
         - Both sections of CS 191 are in the same time slot: -0.5
         - A section of CS 191 and a section of CS 101 are taught in 
             consecutive time slots: +0.5
-        - If consective time slots and one class is in Bloch or Katz and the 
-            other isn't: -0.4
+        - If consective time slots and one class is in remote building Bloch or 
+        Katz and the following class in the other remote building: -0.4
         - A section of CS 191 and a section of CS 101 are taught separated by
             1 hour: +0.25
         - A section of CS 191 and a section of CS 101 are taught in the same
@@ -389,6 +369,8 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
         for gene in chromosome.genes:
             if isinstance(gene, Course):
                 course = gene
+                class_time = None
+                room = None
 
             elif isinstance(gene, ClassTime):
                 class_time = gene
@@ -400,17 +382,24 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
                 check_course: Course = None
                 check_class_time: ClassTime = None
                 check_room: Room = None
+
                 consecutive_time_slots = False
                 one_hour_gap = False
                 same_time = False
                 far_away_rooms = False
                 four_hour_gap = False
                 for check_gene in chromosome.genes:
-                    if check_course and course == check_course:
-                        continue
-
-                    elif isinstance(check_gene, Course):
+                    if isinstance(check_gene, Course):
                         check_course = check_gene
+                        
+                        check_class_time = None
+                        check_room = None
+
+                        consecutive_time_slots = False
+                        one_hour_gap = False
+                        same_time = False
+                        far_away_rooms = False
+                        four_hour_gap = False
 
                     elif isinstance(check_gene, ClassTime):
                         check_class_time = check_gene
@@ -418,85 +407,77 @@ def evaluate_chromosome(chromosome: Chromosome, print_checks=False) -> float:
                     elif isinstance(check_gene, Room):
                         check_room = check_gene
 
-                    if check_course and check_class_time and room:
+                    if check_course and course == check_course:
+                        continue
 
-                        if check_class_time.start - class_time.end == timedelta(hours=0):
+                    if check_course and check_class_time and check_room:
+
+                        # These are aribitrary checks for any given 2 courses.
+                        if check_class_time.start - class_time.start == timedelta(hours=0):
                             same_time = True
-                        elif check_class_time.start - class_time.end == timedelta(hours=1):
+                        elif check_class_time.start - class_time.start == timedelta(hours=1):
                             consecutive_time_slots = True
 
+                            # check if we're in a separate remote building
                             if (
-                                room.building in {"Bloch", "Katz"} and
-                                check_room.building not in {"Bloch", "Katz"}
+                                room.building in remote_buildings
+                                and room.building != check_room.building
+                                and check_room.building in remote_buildings
                             ):
                                 far_away_rooms = True
 
-                        elif check_class_time.start - class_time.end == timedelta(hours=2):
+                        elif check_class_time.start - class_time.start == timedelta(hours=2):
                             one_hour_gap = True
 
-                        elif check_class_time.start - class_time.end == timedelta(hours=4):
+                        elif check_class_time.start - class_time.start == timedelta(hours=4):
                             four_hour_gap = True
 
-                        # section following or followed by another section
+                        # section following another
                         if (
-                            "CS101" in course.name and "CS191" in check_course.name or
                             "CS101" in check_course.name and "CS191" in course.name
+                            or "CS191" in check_course.name and "CS101" in course.name
                         ):
                             if consecutive_time_slots:
                                 if far_away_rooms:
-                                    checks.sections_consecutive_far_away_rooms -= 0.4
-                                else:
-                                    checks.cs_101_191_consecutive += 0.5
-                                    # # # # # # # # # # # # # # # # # # # # # # 
-                                    # checks.cs_101_191_consecutive += 1.0
+                                    chromosome.checks.sections_consecutive_far_away_rooms -= 0.4
+                                    
+                                chromosome.checks.cs_101_191_consecutive += 0.5
 
                             elif one_hour_gap:
-                                checks.cs_101_191_one_hour_apart += 0.25
-                                # # # # # # # # # # # # # # # # # # # # # # # # 
-                                # checks.cs_101_191_one_hour_apart += 0.5
+                                chromosome.checks.cs_101_191_one_hour_apart += 0.25
 
                             elif same_time:
-                                checks.cs_101_191_same_time -= 0.25
+                                chromosome.checks.cs_101_191_same_time -= 0.25
 
-                        # both sections
+                        # comparing same class different sections
                         elif (
-                            "CS101" in course.name and "CS101" in check_course.name or
-                            "CS191" in course.name and "CS191" in check_course.name
+                            "CS101A" == course.name and "CS101B" == check_course.name
+                            or "CS191A" == course.name and "CS191B" == check_course.name
                         ):
                             if same_time:
-                                # These could be condensed if we weren't storing
-                                # info on what specific course.
-                                if "CS101" in course.name:
-                                    checks.cs_101_same_time -= 0.5
-                                elif "CS191" in course.name:
-                                    checks.cs_191_same_time -= 0.5
+                                if "CS101" in check_course.name:
+                                    chromosome.checks.cs_101_same_time = -0.5
+                                elif "CS191" in check_course.name:
+                                    chromosome.checks.cs_191_same_time = -0.5
 
                             elif four_hour_gap:
-                                if "CS101" in course.name:
-                                    checks.cs_101_4_hours_apart += 0.5
-                                elif "CS191" in course.name:
-                                    checks.cs_191_4_hours_apart += 0.5
-                                
-
-                # set to None so we don't the loop again for the same course
+                                if "CS101" in check_course.name:
+                                    chromosome.checks.cs_101_4_hours_apart = 0.5
+                                elif "CS191" in check_course.name:
+                                    chromosome.checks.cs_191_4_hours_apart = 0.5
                 course = None
-                class_time = None
-                room = None     
 
+    chromosome.checks = chromosome.Checks()
     same_room_same_time_check()
     room_size_check()
     preferred_instructor_check()
     instructor_load_check()
     course_specific_check()
-
-    for check in fields(checks):
-        attr: float = getattr(checks, check.name)
-        chromosome.fitness += attr
-
-        if print_checks:
-            print(f"    {check.name}: {attr:.2f}")
+    chromosome.set_fitness_from_checks()
 
     if print_checks:
+        for check in fields(chromosome.checks):
+            print(f"    {check.name}: {getattr(chromosome.checks, check.name):.2f}")
         print("-" * 40)
         print(f"Fitness: {chromosome.fitness:.2f}")
 
@@ -542,6 +523,17 @@ def display_chromosome(chromosome: Chromosome) -> None:
     print(f"Fitness: {chromosome.fitness:.2f}")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+# Write Chromosome Checks to File
+
+def write_chromosome_checks_to_file(
+    chromosome: Chromosome, file: TextIOWrapper) -> None:
+    file.write(
+        f"{chromosome.fitness:.3f},"
+        + ','.join([f'{c:.3f}' for c in chromosome.checks.__dict__.values()])
+        + '\n'
+    )
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # main()
 
 def main(args: list[str]) -> None:
@@ -559,18 +551,18 @@ def main(args: list[str]) -> None:
         Instructor: create_instructors(faculty)
     }
 
-    # unit tests
-    unittest(possible_genes)
+    # tests(possible_genes=possible_genes)
 
     # initialize the ga
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
         population_size=500,
-        mutation_rate=0.05,
+        mutation_rate=0.01,
         possible_genes=possible_genes,
         chromosome_generator=generate_chromosomes,
         chromosome_evaluator=evaluate_chromosome,
         chromosome_displayer=display_chromosome,
         chromosome_mutator=mutate_chromosome,
+        chromosome_writer=write_chromosome_checks_to_file,
     )
     scheduling_ga.initialize_population(count=scheduling_ga.population_size)
 
@@ -590,166 +582,134 @@ def main(args: list[str]) -> None:
     )
 
     # run the ga
-    for i in range(40):
-        print(f"\nGeneration {i}")
+    minimum_improvement: float = 0.05
+    maximum_generations: int = 50
+    generations: int = 1
+    print(f"Starting Genetic Algorithm")
+    print(f"Population Size: {scheduling_ga.population_size}")
+    print(f"Mutation Rate: {scheduling_ga.mutation_rate}")
+    print(f"Maximum Generations: {maximum_generations}")
+    print(f"Minimum Improvement: {minimum_improvement}")
+
+    improvement: float = float('inf')
+    previous_average_fitness: float = 0
+    while True:
+        # Evaluate and reproduce
+        print(f"\nGeneration {generations}")
         scheduling_ga.evaluate_chromosomes()
 
-        scheduling_ga.calculate_probabilities()
-        scheduling_ga.create_offspring()
+        ## calculate improvement
+        if previous_average_fitness == 0:
+            improvement = 1
+        else:
+            improvement = (
+                (scheduling_ga.average_fitness - previous_average_fitness) 
+                / previous_average_fitness
+            )
+        previous_average_fitness = scheduling_ga.average_fitness
 
         print(f"Fittest Chromosome: {scheduling_ga.fittest_chromosome.fitness:.2f}")
         print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
         print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
+        print(f"Improvement: {improvement * 100:.2f}%")
 
+        ## plot the data
         # plot box plot
         # average_fitness_subplot.boxplot(scheduling_ga.fitnesses, positions=[i])
 
-        fitness_subplot.plot(i, scheduling_ga.fittest_chromosome.fitness, "go")
-        fitness_subplot.plot(i, scheduling_ga.average_fitness, "bo")
-        standard_deviation_subplot.plot(i, scheduling_ga.standard_deviation, "ro")
+        fitness_subplot.plot(generations, scheduling_ga.fittest_chromosome.fitness, "go")
+        fitness_subplot.plot(generations, scheduling_ga.average_fitness, "bo")
+        standard_deviation_subplot.plot(generations, scheduling_ga.standard_deviation, "ro")
 
-    scheduling_ga.evaluate_chromosomes()
+        # break condition
+        if minimum_improvement > improvement and generations >= maximum_generations:
+            break
 
-    print(f"\nGeneration {i+1}")
-    print(f"Fittest Chromosome: {scheduling_ga.fittest_chromosome.fitness:.2f}")
-    print(f"Average Fitness: {scheduling_ga.average_fitness:.2f}")
-    print(f"Standard Deviation: {scheduling_ga.standard_deviation:.2f}")
+        scheduling_ga.calculate_probabilities()
+        scheduling_ga.create_offspring()
+
+        generations += 1
 
     fittest_chromosome: Chromosome = scheduling_ga.fittest_chromosome
     scheduling_ga.display_chromosome(fittest_chromosome)
     print("\nChecks:")
-    fittest_chromosome.fitness = 0
     evaluate_chromosome(fittest_chromosome, print_checks=True)
+
+    with open("chromosome_checks.csv", "w+") as f:
+        scheduling_ga.write_chromosomes_to_file(file=f)
 
     plt.show()
 
-def unittest(possible_genes: dict[type, list[Gene]]) -> None:
-    """
-    Course: CS101A
-    Class Time: 11:00 AM - 11:50 AM
-    Instructor: Zein el Din
-    Room: Bloch (119) 50/60 (83.33% full)
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
+def tests(possible_genes: dict[type, list[Gene]]) -> None:
 
-    Course: CS101B
-    Class Time: 12:00 PM - 12:50 PM
-    Instructor: Zaman
-    Room: Haag (301) 50/75 (66.67% full)
+    # set random seed
+    rnd.seed(0)
 
+    # same room same time check
+    # all courses are set at the same time in the same room
+    same_room_same_time_check: Chromosome = generate_chromosomes(possible_genes, 1)[0]
+    for gene in same_room_same_time_check.genes:
+        if isinstance(gene, ClassTime):
+            gene.start = possible_genes[ClassTime][0].start
+            gene.end = possible_genes[ClassTime][0].end
 
-    Course: CS191A
-    Class Time: 10:00 AM - 10:50 AM
-    Instructor: Gharibi
-    Room: FH (310) 50/108 (46.30% full)
+        elif isinstance(gene, Room):
+            gene.building = possible_genes[Room][0].building
+            gene.room = possible_genes[Room][0].room
 
+    same_room_same_time_check = evaluate_chromosome(same_room_same_time_check)
+    assert same_room_same_time_check.checks.same_room_same_time == -0.5 * (len(possible_genes[Course]) - 1)
 
-    Course: CS191B
-    Class Time: 03:00 PM - 03:50 PM
-    Instructor: Xu
-    Room: Bloch (119) 50/60 (83.33% full)
+    # room size checks
+    room_size_checks: Chromosome = generate_chromosomes(possible_genes, 1)[0]
+    for i, gene in enumerate(room_size_checks.genes):
+        if isinstance(gene, Room):
+            room_size_checks.genes[i] = possible_genes[Room][0]
 
+    room_size_checks = evaluate_chromosome(room_size_checks)
+    assert room_size_checks.checks.room_too_small == -0.5 * 1
+    assert room_size_checks.checks.room_3x_too_big == -0.2 * 1
+    assert room_size_checks.checks.room_6x_too_big == 0
+    assert room_size_checks.checks.room_size_sufficient == 0.3 * 9
 
-    Course: CS201
-    Class Time: 01:00 PM - 01:50 PM
-    Instructor: Shah
-    Room: Bloch (119) 50/60 (83.33% full)
+    # preferred instructor checks
+    preferred_instructor_checks: Chromosome = generate_chromosomes(possible_genes, 1)[0]
+    for i, gene in enumerate(preferred_instructor_checks.genes):
+        if isinstance(gene, Instructor):
+            preferred_instructor_checks.genes[i] = possible_genes[Instructor][0]
 
+    preferred_instructor_checks = evaluate_chromosome(preferred_instructor_checks)
+    assert preferred_instructor_checks.checks.preferred_instructor == 0.5 * 5
+    assert preferred_instructor_checks.checks.other_instructor == 0.2 * 0
+    assert preferred_instructor_checks.checks.other_faculty == round(-0.1 * 6, 2)
 
-    Course: CS291
-    Class Time: 10:00 AM - 10:50 AM
-    Instructor: Uddin
-    Room: MNLC (325) 50/450 (11.11% full)
+    # instructor load checks
+    instructor_load_checks: Chromosome = generate_chromosomes(possible_genes, 1)[0]
 
+    instructor_load_checks = evaluate_chromosome(instructor_load_checks)
+    assert round(instructor_load_checks.checks.instructor_one_class_one_time, 2) == 0.2 * 11
+    assert instructor_load_checks.checks.instructor_multiple_classes_one_time == -0.2 * 0
+    assert instructor_load_checks.checks.instructor_more_than_4_classes == -0.5 * 0
+    assert round(instructor_load_checks.checks.instructor_less_than_3_classes, 2) == -0.4 * 5
+    assert instructor_load_checks.checks.instructor_consecutive_slots_far_away_rooms == -0.4 * 0
 
-    Course: CS303
-    Class Time: 02:00 PM - 02:50 PM
-    Instructor: Zein el Din
-    Room: FH (216) 60/30 (200.00% full)
+    # course specific checks
+    course_specific_checks: Chromosome = instructor_load_checks        
+    
+    display_chromosome(course_specific_checks)
+    course_specific_checks = evaluate_chromosome(course_specific_checks)
+    assert course_specific_checks.checks.cs_101_4_hours_apart == 0.5 * 0
+    assert course_specific_checks.checks.cs_101_same_time == -0.5 * 0
+    assert course_specific_checks.checks.cs_191_4_hours_apart == 0.5 * 0
+    assert course_specific_checks.checks.cs_191_same_time == -0.5 * 0
+    assert course_specific_checks.checks.cs_101_191_consecutive == 0.5 * 1
+    assert course_specific_checks.checks.sections_consecutive_far_away_rooms == -0.4 * 0
+    assert course_specific_checks.checks.cs_101_191_one_hour_apart == 0.25 * 2
+    assert course_specific_checks.checks.cs_101_191_same_time == -0.25 * 0
 
-
-    Course: CS304
-    Class Time: 10:00 AM - 10:50 AM
-    Instructor: Nait-Abdesselam
-    Room: Haag (301) 25/75 (33.33% full)
-
-
-    Course: CS394
-    Class Time: 02:00 PM - 02:50 PM
-    Instructor: Xu
-    Room: FH (216) 20/30 (66.67% full)
-
-
-    Course: CS449
-    Class Time: 03:00 PM - 03:50 PM
-    Instructor: Xu
-    Room: Katz (003) 60/45 (133.33% full)
-
-
-    Course: CS451
-    Class Time: 12:00 PM - 12:50 PM
-    Instructor: Xu
-    Room: MNLC (325) 100/450 (22.22% full)
-    """
-    chromosome: Chromosome = Chromosome(genes=[])
-    chromosome.genes = [
-        possible_genes[Course][0],
-        ClassTime(datetime(2020, 1, 1, 11, 0), datetime(2020, 1, 1, 11, 50)),
-        Instructor("Zein el Din"),
-        Room("Bloch", "119", 60),
-
-        possible_genes[Course][1],
-        ClassTime(datetime(2020, 1, 1, 12, 0), datetime(2020, 1, 1, 12, 50)),
-        Instructor("Zaman"),
-        Room("Haag", "301", 75),
-
-        possible_genes[Course][2],
-        ClassTime(datetime(2020, 1, 1, 10, 0), datetime(2020, 1, 1, 10, 50)),
-        Instructor("Gharibi"),
-        Room("FH", "310", 108),
-
-        possible_genes[Course][3],
-        ClassTime(datetime(2020, 1, 1, 15, 0), datetime(2020, 1, 1, 15, 50)),
-        Instructor("Xu"),
-        Room("Bloch", "119", 60),
-
-        possible_genes[Course][4],
-        ClassTime(datetime(2020, 1, 1, 13, 0), datetime(2020, 1, 1, 13, 50)),
-        Instructor("Shah"),
-        Room("Bloch", "119", 60),
-
-        possible_genes[Course][5],
-        ClassTime(datetime(2020, 1, 1, 10, 0), datetime(2020, 1, 1, 10, 50)),
-        Instructor("Uddin"),
-        Room("MNLC", "325", 450),
-
-        possible_genes[Course][6],
-        ClassTime(datetime(2020, 1, 1, 14, 0), datetime(2020, 1, 1, 14, 50)),
-        Instructor("Zein el Din"),
-        Room("FH", "216", 30),
-
-        possible_genes[Course][7],
-        ClassTime(datetime(2020, 1, 1, 10, 0), datetime(2020, 1, 1, 10, 50)),
-        Instructor("Nait-Abdesselam"),
-        Room("Haag", "301", 75),
-
-        possible_genes[Course][8],
-        ClassTime(datetime(2020, 1, 1, 14, 0), datetime(2020, 1, 1, 14, 50)),
-        Instructor("Xu"),
-        Room("FH", "216", 30),
-
-        possible_genes[Course][9],
-        ClassTime(datetime(2020, 1, 1, 15, 0), datetime(2020, 1, 1, 15, 50)),
-        Instructor("Xu"),
-        Room("Katz", "003", 45),
-
-        possible_genes[Course][10],
-        ClassTime(datetime(2020, 1, 1, 12, 0), datetime(2020, 1, 1, 12, 50)),
-        Instructor("Xu"),
-        Room("MNLC", "325", 450)
-    ]
-    # evaluate_chromosome(chromosome, print_checks=True)
-    # assert chromosome.fitness == 5.9
-    # assert chromosome.fitness == -2992.90
+    rnd.seed(datetime.now().microsecond)
 
 if __name__ == "__main__":
     args: list[str] = sys.argv[1:]

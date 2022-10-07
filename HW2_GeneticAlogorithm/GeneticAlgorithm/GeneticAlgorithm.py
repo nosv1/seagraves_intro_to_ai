@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from io import TextIOWrapper
 from math import e
 from statistics import mean, stdev
 from random import choices
@@ -17,15 +18,17 @@ class GeneticAlgorithm:
         chromosome_generator: Callable,
         chromosome_evaluator: Callable,
         chromosome_displayer: Callable,
-        chromosome_mutator: Callable
+        chromosome_mutator: Callable,
+        chromosome_writer: Callable = None
     ) -> None:
         self.population_size = population_size
         self.mutation_rate = mutation_rate
         self.possible_genes = possible_genes
-        self.chromosome_generator = chromosome_generator
-        self.chromosome_evaluator = chromosome_evaluator
-        self.chromosome_displayer = chromosome_displayer
-        self.chromosome_mutator = chromosome_mutator
+        self.__chromosome_generator = chromosome_generator
+        self.__chromosome_evaluator = chromosome_evaluator
+        self.__chromosome_displayer = chromosome_displayer
+        self.__chromosome_mutator = chromosome_mutator
+        self.__chromosome_writer = chromosome_writer
 
         self.__population: list[Chromosome] = []
         self.__probablities: list[float] = []
@@ -59,7 +62,7 @@ class GeneticAlgorithm:
     # generate chromosomes
 
     def generate_chromosomes(self, count: int=1, **kwargs) -> None:
-        return self.chromosome_generator(
+        return self.__chromosome_generator(
             count=count, possible_genes=self.possible_genes, **kwargs
         )
 
@@ -73,7 +76,7 @@ class GeneticAlgorithm:
         """
         Assign a fitness value to each chromosome in the population.
         """
-        [self.chromosome_evaluator(c) for c in self.__population]
+        self.__population = [self.__chromosome_evaluator(c) for c in self.__population]
 
         # calculate fittest chromosome, mean, and standard deviation
         self.__fitnesses: list[float] = []
@@ -97,7 +100,7 @@ class GeneticAlgorithm:
         # Note, the order of the distribution aligns with the population.
         probablities: list[float] = [e ** c.fitness for c in self.__population]
         sum_probabilities: float = sum(probablities)
-        self.probablities = [p / sum_probabilities for p in probablities]
+        self.__probablities = [p / sum_probabilities for p in probablities]
 
     # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
     # create offspring
@@ -107,16 +110,16 @@ class GeneticAlgorithm:
         Create a new population using the probability distribution to randomly
         select chromosomes, and then try to mutate them.
         """
+        population_copy: list[Chromosome] = self.population.copy()
         self.__population = [
-            self.chromosome_mutator(
+            self.__chromosome_mutator(
                 chromosome=chromosome,
                 mutation_rate=self.mutation_rate,
                 possible_genes=self.possible_genes
-            ) 
-            for chromosome 
-            in choices(
-                population=self.__population,
-                weights=self.probablities,
+            )
+            for chromosome in choices(
+                population=population_copy,
+                weights=self.__probablities,
                 k=self.population_size
             )
         ]
@@ -125,4 +128,11 @@ class GeneticAlgorithm:
     # display choromosomes
 
     def display_chromosome(self, chromosome: Chromosome) -> None:
-        self.chromosome_displayer(chromosome)
+        self.__chromosome_displayer(chromosome)
+
+    # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+    # write choromosomes to file
+
+    def write_chromosomes_to_file(self, file: TextIOWrapper, **kwargs) -> None:
+        for chromosome in self.population:
+            self.__chromosome_writer(file=file, chromosome=chromosome, **kwargs)
