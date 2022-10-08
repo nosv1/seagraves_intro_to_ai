@@ -1,66 +1,55 @@
 
+Course: CS101A  
+Class Time: 12:00 PM - 12:50 PM  
+Instructor: Zein el Din  
+Room: Royall (206) 50/75 (66.67% full)  
 
-Course: CS101A
-Class Time: 02:00 PM - 02:50 PM
-Instructor: Gladbach
-Room: Haag (301) 50/75 (66.67% full)
+Course: CS101B  
+Class Time: 02:00 PM - 02:50 PM  
+Instructor: Zein el Din  
+Room: Royall (206) 50/75 (66.67% full)  
 
+Course: CS191A  
+Class Time: 11:00 AM - 11:50 AM  
+Instructor: Zein el Din  
+Room: Bloch (119) 50/60 (83.33% full)  
 
-Course: CS101B
-Class Time: 12:00 PM - 12:50 PM
-Instructor: Gladbach
-Room: Haag (301) 50/75 (66.67% full)
+Course: CS191B  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Hare  
+Room: Royall (201) 50/50 (100.00% full)  
 
+Course: CS201  
+Class Time: 12:00 PM - 12:50 PM  
+Instructor: Hare  
+Room: Royall (201) 50/50 (100.00% full)  
 
-Course: CS191A
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Hare
-Room: Royall (206) 50/75 (66.67% full)
+Course: CS291  
+Class Time: 12:00 PM - 12:50 PM  
+Instructor: Song  
+Room: Haag (201) 50/60 (83.33% full)  
 
+Course: CS303  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Zein el Din  
+Room: Bloch (119) 60/60 (100.00% full)  
 
-Course: CS191B
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Hare
-Room: Haag (201) 50/60 (83.33% full)
+Course: CS304  
+Class Time: 02:00 PM - 02:50 PM  
+Instructor: Hare  
+Room: Royall (201) 25/50 (50.00% full)  
 
+Course: CS394  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Song  
+Room: Katz (003) 20/45 (44.44% full)  
 
-Course: CS201
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Hare
-Room: Bloch (119) 50/60 (83.33% full)
+Course: CS449  
+Class Time: 02:00 PM - 02:50 PM  
+Instructor: Xu  
+Room: Haag (201) 60/60 (100.00% full)  
 
-
-Course: CS291
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Song
-Room: FH (310) 50/108 (46.30% full)
-
-
-Course: CS303
-Class Time: 02:00 PM - 02:50 PM
-Instructor: Gladbach
-Room: Bloch (119) 60/60 (100.00% full)
-
-
-Course: CS304
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Xu
-Room: Royall (201) 25/50 (50.00% full)
-
-
-Course: CS394
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Song
-Room: Katz (003) 20/45 (44.44% full)
-
-
-Course: CS449
-Class Time: 01:00 PM - 01:50 PM
-Instructor: Xu
-Room: Haag (301) 60/75 (80.00% full)
-
-
-Course: CS451
-Class Time: 02:00 PM - 02:50 PM
-Instructor: Song
-Room: FH (310) 100/108 (92.59% full)
+Course: CS451  
+Class Time: 03:00 PM - 03:50 PM  
+Instructor: Song  
+Room: FH (310) 100/108 (92.59% full)  

@@ -9,6 +9,7 @@ from io import TextIOWrapper
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import pandas as pd
+import pickle
 import random as rnd
 from random import choice, random
 import sys
@@ -249,7 +250,6 @@ def evaluate_chromosome(
         class_time: ClassTime = None
         room: Room = None
         course: Course = None
-        course_count: int = 0
         instructor_counts: dict[str, int] = {}
         for i, gene in enumerate(chromosome.genes):
             if isinstance(gene, Instructor):
@@ -294,10 +294,6 @@ def evaluate_chromosome(
                         check_instructor = None
                         check_class_time = None
                         check_room = None
-
-                        one_class_one_time = True
-                        consecutive_time_slots = False
-                        far_away_rooms = False
 
                         check_course = check_gene
 
@@ -518,7 +514,7 @@ def display_chromosome(chromosome: Chromosome) -> None:
     for gene in chromosome.genes:
         if isinstance(gene, Course):
             course = gene
-            print(f"\n\nCourse: {course.name}")
+            print(f"\nCourse: {course.name}")
 
         elif isinstance(gene, ClassTime):
             class_time = gene
@@ -553,23 +549,23 @@ def save_solution(chromosome: Chromosome) -> None:
         for gene in chromosome.genes:
             if isinstance(gene, Course):
                 info = gene
-                f.write(f"\n\nCourse: {info.name}\n")
+                f.write(f"\nCourse: {info.name}  \n")
 
             elif isinstance(gene, ClassTime):
                 class_time = gene
-                f.write(f"Class Time: {class_time.start.strftime('%I:%M %p')} - {class_time.end.strftime('%I:%M %p')}\n")
+                f.write(f"Class Time: {class_time.start.strftime('%I:%M %p')} - {class_time.end.strftime('%I:%M %p')}  \n")
             
             elif isinstance(gene, Instructor):
                 instructor = gene
-                f.write(f"Instructor: {instructor.name}\n")
+                f.write(f"Instructor: {instructor.name}  \n")
             
             elif isinstance(gene, Room):
                 room = gene
-                f.write(f"Room: {gene.building} ({gene.room}) {info.expected_enrollment}/{room.capacity} ({info.expected_enrollment / room.capacity * 100:.2f}% full)\n")
+                f.write(f"Room: {gene.building} ({gene.room}) {info.expected_enrollment}/{room.capacity} ({info.expected_enrollment / room.capacity * 100:.2f}% full)  \n")
 
     with open("Solution/Checks.txt", "w+") as f:
         for check in fields(chromosome.checks):
-            f.write(f"{check.name}: {getattr(chromosome.checks, check.name):.2f}\n")
+            f.write(f"{check.name}: {getattr(chromosome.checks, check.name):.2f}  \n")
         f.write(f"Fitness: {chromosome.fitness:.2f}")
 
     with open("Solution/Instructors.txt", "w+") as f:
@@ -617,11 +613,11 @@ def save_solution(chromosome: Chromosome) -> None:
                 
         for instructor in instructors:
             instructors[instructor].sort(key=lambda x: x.class_time.start)
-            f.write(f"\nInstructor: {instructor}\n")
+            f.write(f"\nInstructor: {instructor}  \n")
             for info in instructors[instructor]:
-                f.write(f"    Course: {info.course.name}\n")
-                f.write(f"    Class Time: {info.class_time.start.strftime('%I:%M %p')} - {info.class_time.end.strftime('%I:%M %p')}\n")
-                f.write(f"    Room: {info.room.building} ({info.room.room}) {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)\n\n")
+                f.write(f"    Course: {info.course.name}  \n")
+                f.write(f"    Class Time: {info.class_time.start.strftime('%I:%M %p')} - {info.class_time.end.strftime('%I:%M %p')}  \n")
+                f.write(f"    Room: {info.room.building} ({info.room.room}) {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)  \n")
 
     with open("Solution/Rooms.txt", "w+") as f:
         @dataclass
@@ -668,12 +664,12 @@ def save_solution(chromosome: Chromosome) -> None:
                 
         for courses in rooms.values():
             courses.sort(key=lambda x: x.class_time.start)
-            f.write(f"\nRoom: {courses[0].room.building} ({courses[0].room.room})\n")
+            f.write(f"\nRoom: {courses[0].room.building} ({courses[0].room.room})  \n")
             for info in courses:
-                f.write(f"    Class Time: {info.class_time.start.strftime('%I:%M %p')} - {info.class_time.end.strftime('%I:%M %p')}\n")
+                f.write(f"    Class Time: {info.class_time.start.strftime('%I:%M %p')} - {info.class_time.end.strftime('%I:%M %p')}  \n")
                 f.write(f"    Course: {info.course.name}\n")
-                f.write(f"    Instructor: {info.instructor.name}\n")
-                f.write(f"    Capacity: {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)\n\n")
+                f.write(f"    Instructor: {info.instructor.name}  \n")
+                f.write(f"    Capacity: {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)  \n\n")
 
     with open("Solution/TimeSlots.txt", "w+") as f:
         @dataclass
@@ -721,23 +717,29 @@ def save_solution(chromosome: Chromosome) -> None:
         time_slots = {k: time_slots[k] for k in sorted(time_slots)}
         for time_slot in time_slots:
             time_slots[time_slot].sort(key=lambda x: x.course.name)
-            f.write(f"\nTime Slot: {time_slots[time_slot][0].class_time.start.strftime('%I:%M %p')} - {time_slots[time_slot][0].class_time.end.strftime('%I:%M %p')}\n")
+            f.write(f"\nTime Slot: {time_slots[time_slot][0].class_time.start.strftime('%I:%M %p')} - {time_slots[time_slot][0].class_time.end.strftime('%I:%M %p')}  \n")
             for info in time_slots[time_slot]:
-                f.write(f"    Course: {info.course.name}\n")
-                f.write(f"    Instructor: {info.instructor.name}\n")
-                f.write(f"    Room: {info.room.building} ({info.room.room}) {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)\n\n")
+                f.write(f"    Course: {info.course.name}  \n")
+                f.write(f"    Instructor: {info.instructor.name}  \n")
+                f.write(f"    Room: {info.room.building} ({info.room.room}) {info.course.expected_enrollment}/{info.room.capacity} ({info.course.expected_enrollment / info.room.capacity * 100:.2f}% full)  \n\n")
+
+    with open("Solution/Chromosome.pickle", "wb+") as f:
+        pickle.dump(chromosome, f)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 # main()
 
 def main(args: list[str]) -> None:
+
     # read the data
+    print("Reading data...")
     courses: pd.DataFrame = pd.read_csv("Database/courses.csv", dtype=str)
     class_times: pd.DataFrame = pd.read_csv("Database/class_times.csv", dtype=str)
     rooms: pd.DataFrame = pd.read_csv("Database/rooms.csv", dtype=str)
     faculty: pd.DataFrame = pd.read_csv("Database/faculty.csv", dtype=str)
 
     # create the objects
+    print("Creating dictionary of possible genes...")
     possible_genes: dict[type, list[Gene]] = {
         Course: create_courses(courses),
         ClassTime: create_class_times(class_times),
@@ -745,9 +747,12 @@ def main(args: list[str]) -> None:
         Instructor: create_instructors(faculty)
     }
 
+    # Assertion tests
+    print("Checking assertions...")
     tests(possible_genes=possible_genes)
 
     # initialize the ga
+    print("Initializing the GA...")
     scheduling_ga: GeneticAlgorithm = GeneticAlgorithm(
         population_size=1000,
         mutation_rate=0.01,
@@ -761,6 +766,7 @@ def main(args: list[str]) -> None:
     scheduling_ga.initialize_population(count=scheduling_ga.population_size)
 
     # setup plot
+    print("Setting up the plot...")
     fig = plt.figure()
     fitness_subplot = fig.add_subplot(1, 1, 1)
     standard_deviation_subplot = fitness_subplot.twinx()
@@ -778,8 +784,7 @@ def main(args: list[str]) -> None:
     # run the ga
     minimum_improvement: float = 0.01
     maximum_generations: int = 100
-    generations: int = 1
-    print(f"Starting Genetic Algorithm")
+    print(f"\nStarting GA...")
     print(f"Population Size: {scheduling_ga.population_size}")
     print(f"Mutation Rate: {scheduling_ga.mutation_rate}")
     print(f"Maximum Generations: {maximum_generations}")
@@ -787,6 +792,7 @@ def main(args: list[str]) -> None:
 
     improvement: float = float('inf')
     previous_average_fitness: float = 0
+    generations: int = 1
     while True:
         # Evaluate and reproduce
         print(f"\nGeneration {generations}")
@@ -890,7 +896,6 @@ def tests(possible_genes: dict[type, list[Gene]]) -> None:
     # course specific checks
     course_specific_checks: Chromosome = instructor_load_checks        
     
-    display_chromosome(course_specific_checks)
     course_specific_checks = evaluate_chromosome(course_specific_checks)
     assert course_specific_checks.checks.cs_101_4_hours_apart == 0.5 * 0
     assert course_specific_checks.checks.cs_101_same_time == -0.5 * 0
@@ -900,6 +905,12 @@ def tests(possible_genes: dict[type, list[Gene]]) -> None:
     assert course_specific_checks.checks.sections_consecutive_far_away_rooms == -0.4 * 0
     assert course_specific_checks.checks.cs_101_191_one_hour_apart == 0.25 * 1
     assert course_specific_checks.checks.cs_101_191_same_time == -0.25 * 0
+
+    # previous solution's chromosome
+    # with open("Solution/Chromosome.pickle", "rb") as file:
+    #     previous_solution: Chromosome = pickle.load(file)
+    # display_chromosome(previous_solution)
+    # previous_solution = evaluate_chromosome(previous_solution, print_checks=True)
 
     rnd.seed(datetime.now().microsecond)
 

@@ -7,7 +7,7 @@
 ---
 
 ## Structure
-main.py sets up the GA and has functions to define how the GA should mutate or create new genes. The GA package is simply a framework to call those functions.
+main.py sets up the GA and has functions to define how the GA should mutate or create new genes. The GA package is simply a framework to call those functions. I'm not convinced this was the best way to go about structuring the project, but I wanted to try to generalize the GA package while still allowing the user to define his/her own methodds...
 
 ---
 
@@ -23,83 +23,88 @@ Alternate views of the solution can be found [here](https://github.com/nosv1/sea
 
 ## **End Fitness: 16.0** 
 
-**Course: CS101A**  
-Class Time: 02:00 PM - 02:50 PM  
-Instructor: Gladbach  
-Room: Haag (301) 50/75 (66.67% full)  
 
-**Course: CS101B**  
-Class Time: 12:00 PM - 12:50 PM  
-Instructor: Gladbach  
-Room: Haag (301) 50/75 (66.67% full)  
-
-**Course: CS191A**  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Hare  
-Room: Royall (206) 50/75 (66.67% full)  
-
-**Course: CS191B**  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Hare  
-Room: Haag (201) 50/60 (83.33% full)  
-
-**Course: CS201**  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Hare  
-Room: Bloch (119) 50/60 (83.33% full)  
-
-**Course: CS291**  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Song  
-Room: FH (310) 50/108 (46.30% full)  
-
-**Course: CS303**  
-Class Time: 02:00 PM - 02:50 PM  
-Instructor: Gladbach  
-Room: Bloch (119) 60/60 (100.00% full)  
-
-**Course: CS304**  
+Course: CS101A  
 Class Time: 01:00 PM - 01:50 PM  
 Instructor: Xu  
-Room: Royall (201) 25/50 (50.00% full)  
+Room: Haag (301) 50/75 (66.67% full)  
 
-**Course: CS394**  
-Class Time: 01:00 PM - 01:50 PM  
+Course: CS101B  
+Class Time: 11:00 AM - 11:50 AM  
+Instructor: Gharibi  
+Room: Haag (201) 50/60 (83.33% full)  
+
+Course: CS191A  
+Class Time: 10:00 AM - 10:50 AM  
+Instructor: Gharibi  
+Room: FH (310) 50/108 (46.30% full)  
+
+Course: CS191B  
+Class Time: 12:00 PM - 12:50 PM  
+Instructor: Hare  
+Room: Royall (201) 50/50 (100.00% full)  
+
+Course: CS201  
+Class Time: 10:00 AM - 10:50 AM  
+Instructor: Hare  
+Room: Royall (201) 50/50 (100.00% full)  
+
+Course: CS291  
+Class Time: 02:00 PM - 02:50 PM  
+Instructor: Xu  
+Room: Haag (201) 50/60 (83.33% full)  
+
+Course: CS303  
+Class Time: 03:00 PM - 03:50 PM  
+Instructor: Hare  
+Room: Haag (301) 60/75 (80.00% full)  
+
+Course: CS304  
+Class Time: 11:00 AM - 11:50 AM  
+Instructor: Gharibi  
+Room: FH (216) 25/30 (83.33% full)  
+
+Course: CS394  
+Class Time: 11:00 AM - 11:50 AM  
 Instructor: Song  
 Room: Katz (003) 20/45 (44.44% full)  
 
-**Course: CS449**  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Xu  
-Room: Haag (301) 60/75 (80.00% full)  
+Course: CS449  
+Class Time: 12:00 PM - 12:50 PM  
+Instructor: Uddin  
+Room: Royall (206) 60/75 (80.00% full)  
 
-**Course: CS451**  
-Class Time: 02:00 PM - 02:50 PM  
-Instructor: Song  
-Room: FH (310) 100/108 (92.59% full)  
+Course: CS451  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Hare  
+Room: Royall (201) 100/50 (200.00% full)  
 
 </br>
 
 ## Checks
 same_room_same_time: 0.00  
-room_too_small: 0.00  
+
+room_too_small: -0.50  
 room_3x_too_big: 0.00  
 room_6x_too_big: 0.00  
-room_size_sufficient: 3.30  
-preferred_instructor: 5.50  
-other_instructor: 0.00  
-other_faculty: 0.00  
-instructor_one_class_one_time: 2.20  
-instructor_multiple_classes_one_time: 0.00  
+room_size_sufficient: 3.00  
+
+preferred_instructor: 3.00  
+other_instructor: 0.60  
+other_faculty: -0.20  
+
+instructor_one_class_one_time: 2.00  
+instructor_multiple_classes_one_time: -0.20  
 instructor_more_than_4_classes: 0.00  
-instructor_less_than_3_classes: 0.00  
-instructor_consecutive_slots: 3.50  
+instructor_less_than_3_classes: -0.80  
+instructor_consecutive_slots: 4.50  
 instructor_consecutive_slots_far_away_rooms: 0.00  
+
 cs_101_4_hours_apart: 0.00  
 cs_101_same_time: 0.00  
 cs_191_4_hours_apart: 0.00  
-cs_191_same_time: -0.50  
-cs_101_191_consecutive: 2.00  
+cs_191_same_time: 0.00  
+cs_101_191_consecutive: 1.50  
 sections_consecutive_far_away_rooms: 0.00  
 cs_101_191_one_hour_apart: 0.00  
 cs_101_191_same_time: 0.00  
@@ -112,7 +117,7 @@ cs_101_191_same_time: 0.00
 Overall the project went well. The actual GA part isn't so difficult. The hardest part was validating the fitness function - even writing this now, I'm only so confident it's producing correct values. I've come up with an esitmate fitness of 19 for an optimal schedule, and given the GA is outputting a fitness of 16 or so with some observable penalties and missed opportunities (seen in Solution/Checks.txt), I think it's working...
 
 ### **Parallelization**
-I decided not too (after testing)... with a small population (500 or so) there ends up being only a small benefit given the overhead needed to pass the population between threads, and given the calculation of the fitness function isn't difficult, I'm not unhappy with the speeds between generations (2 seconds or so for population of 1000).
+I decided not to parallelize (after testing)... with a small population (500 or so) there ends up being only a small benefit given the overhead needed to pass the population between threads, and given the calculation of the fitness function isn't difficult, I'm not unhappy with the speeds between generations (2 seconds or so for population of 1000).
 
 ### **Fitness Function**
 I disagree with some of the weights used for the fitness function. For exmaple, evaluating a solution with 2 classes in the same room at the same time should be a massive penalty, along with an instructor needing to be in two places at the same time, these solutions are impossible and should be weighted as such - which is hopefully a fair opinion.
