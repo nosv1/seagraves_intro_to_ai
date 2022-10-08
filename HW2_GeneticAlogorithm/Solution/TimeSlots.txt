@@ -1,54 +1,54 @@
 
+Time Slot: 10:00 AM - 10:50 AM  
+    Course: CS291  
+    Instructor: Hare  
+    Room: Royall (201) 50/50 (100.00% full)  
+
+
 Time Slot: 11:00 AM - 11:50 AM  
     Course: CS191A  
     Instructor: Zein el Din  
-    Room: Bloch (119) 50/60 (83.33% full)  
-
-
-Time Slot: 12:00 PM - 12:50 PM  
-    Course: CS101A  
-    Instructor: Zein el Din  
-    Room: Royall (206) 50/75 (66.67% full)  
-
-    Course: CS201  
-    Instructor: Hare  
-    Room: Royall (201) 50/50 (100.00% full)  
-
-    Course: CS291  
-    Instructor: Song  
-    Room: Haag (201) 50/60 (83.33% full)  
-
-
-Time Slot: 01:00 PM - 01:50 PM  
-    Course: CS191B  
-    Instructor: Hare  
-    Room: Royall (201) 50/50 (100.00% full)  
-
-    Course: CS303  
-    Instructor: Zein el Din  
-    Room: Bloch (119) 60/60 (100.00% full)  
-
-    Course: CS394  
-    Instructor: Song  
-    Room: Katz (003) 20/45 (44.44% full)  
-
-
-Time Slot: 02:00 PM - 02:50 PM  
-    Course: CS101B  
-    Instructor: Zein el Din  
-    Room: Royall (206) 50/75 (66.67% full)  
+    Room: FH (310) 50/108 (46.30% full)  
 
     Course: CS304  
     Instructor: Hare  
-    Room: Royall (201) 25/50 (50.00% full)  
-
-    Course: CS449  
-    Instructor: Xu  
-    Room: Haag (201) 60/60 (100.00% full)  
+    Room: FH (216) 25/30 (83.33% full)  
 
 
-Time Slot: 03:00 PM - 03:50 PM  
+Time Slot: 12:00 PM - 12:50 PM  
+    Course: CS101B  
+    Instructor: Hare  
+    Room: Bloch (119) 50/60 (83.33% full)  
+
+    Course: CS201  
+    Instructor: Zein el Din  
+    Room: Royall (201) 50/50 (100.00% full)  
+
     Course: CS451  
     Instructor: Song  
     Room: FH (310) 100/108 (92.59% full)  
+
+
+Time Slot: 01:00 PM - 01:50 PM  
+    Course: CS101A  
+    Instructor: Zein el Din  
+    Room: Bloch (119) 50/60 (83.33% full)  
+
+    Course: CS303  
+    Instructor: Hare  
+    Room: Haag (301) 60/75 (80.00% full)  
+
+    Course: CS394  
+    Instructor: Song  
+    Room: Royall (201) 20/50 (40.00% full)  
+
+
+Time Slot: 02:00 PM - 02:50 PM  
+    Course: CS191B  
+    Instructor: Zein el Din  
+    Room: Haag (201) 50/60 (83.33% full)  
+
+    Course: CS449  
+    Instructor: Song  
+    Room: Bloch (119) 60/60 (100.00% full)  
 
