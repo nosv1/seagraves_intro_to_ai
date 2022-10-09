@@ -328,7 +328,7 @@ def evaluate_chromosome(
     if print_checks:
         chromosome.checks.print_checks()
         print('-' * 40)
-        print(f"Fitness: {chromosome.fitness}")
+        print(f"Fitness: {chromosome.fitness:.2f}")
 
     return chromosome
 
@@ -687,10 +687,10 @@ def main(args: list[str]) -> None:
 def tests(possible_genes: dict[type, list[Gene]]) -> None:
 
     # previous solution's chromosome
-    with open("Solution/Chromosome.pickle", "rb") as file:
-        previous_solution: Chromosome = pickle.load(file)
-    display_chromosome(previous_solution)
-    previous_solution = evaluate_chromosome(previous_solution, print_checks=True)
+    # with open("Solution/Chromosome.pickle", "rb") as file:
+    #     previous_solution: Chromosome = pickle.load(file)
+    # display_chromosome(previous_solution)
+    # previous_solution = evaluate_chromosome(previous_solution, print_checks=True)
 
     # set random seed
     rnd.seed(0)
