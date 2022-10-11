@@ -29,9 +29,9 @@ class Checks:
         self.instructor_consecutive_slots: Check = Check(weight=0.5)
         self.instructor_consecutive_slots_far_away_rooms: Check = Check(weight=-0.4)
 
-        self.cs_101_4_hour_gap: Check = Check(weight=0.5)
+        self.cs_101_5_hour_gap: Check = Check(weight=0.5)
         self.cs_101_same_time: Check = Check(weight=-0.5)
-        self.cs_191_4_hour_gap: Check = Check(weight=0.5)
+        self.cs_191_5_hour_gap: Check = Check(weight=0.5)
         self.cs_191_same_time: Check = Check(weight=-0.5)
         self.cs_101_191_consecutive: Check = Check(weight=0.5)
         self.sections_consecutive_far_away_rooms: Check = Check(weight=-0.4)

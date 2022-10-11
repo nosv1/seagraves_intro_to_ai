@@ -252,13 +252,13 @@ def evaluate_chromosome(
         chromosome.checks.cs_101_same_time.count += 1
 
     elif abs(cs101_delta) > timedelta(hours=4):
-        chromosome.checks.cs_101_4_hour_gap.count += 1
+        chromosome.checks.cs_101_5_hour_gap.count += 1
  
     if abs(cs191_delta) == timedelta(hours=0):
         chromosome.checks.cs_191_same_time.count += 1
     
     elif abs(cs191_delta) > timedelta(hours=4):
-        chromosome.checks.cs_191_4_hour_gap.count += 1
+        chromosome.checks.cs_191_5_hour_gap.count += 1
 
     for section_1, section_2 in section_combinations:
         # section if following another section (not of same class)
@@ -747,9 +747,9 @@ def tests(possible_genes: dict[type, list[Gene]]) -> None:
     course_specific_checks: Chromosome = instructor_load_checks        
     
     course_specific_checks = evaluate_chromosome(course_specific_checks)
-    assert course_specific_checks.checks.cs_101_4_hour_gap.count == 0
+    assert course_specific_checks.checks.cs_101_5_hour_gap.count == 0
     assert course_specific_checks.checks.cs_101_same_time.count == 0
-    assert course_specific_checks.checks.cs_191_4_hour_gap.count == 0
+    assert course_specific_checks.checks.cs_191_5_hour_gap.count == 0
     assert course_specific_checks.checks.cs_191_same_time.count == 0
     assert course_specific_checks.checks.cs_101_191_consecutive.count == 1
     assert course_specific_checks.checks.sections_consecutive_far_away_rooms.count == 0
