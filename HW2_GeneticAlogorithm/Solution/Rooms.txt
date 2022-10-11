@@ -1,67 +1,69 @@
 
-Room: Bloch (119)  
+Room: Royall (201)  
     Class Time: 12:00 PM - 12:50 PM  
+    Course: CS101A
+    Instructor: Zein el Din  
+    Capacity: 50/50 (100.00% full)  
+
+
+Room: Bloch (119)  
+    Class Time: 11:00 AM - 11:50 AM  
     Course: CS101B
     Instructor: Hare  
     Capacity: 50/60 (83.33% full)  
 
     Class Time: 01:00 PM - 01:50 PM  
-    Course: CS101A
+    Course: CS191A
     Instructor: Zein el Din  
     Capacity: 50/60 (83.33% full)  
 
-    Class Time: 02:00 PM - 02:50 PM  
-    Course: CS449
-    Instructor: Song  
-    Capacity: 60/60 (100.00% full)  
-
-
-Room: FH (310)  
-    Class Time: 11:00 AM - 11:50 AM  
-    Course: CS191A
-    Instructor: Zein el Din  
-    Capacity: 50/108 (46.30% full)  
-
-    Class Time: 12:00 PM - 12:50 PM  
-    Course: CS451
-    Instructor: Song  
-    Capacity: 100/108 (92.59% full)  
-
 
 Room: Haag (201)  
-    Class Time: 02:00 PM - 02:50 PM  
+    Class Time: 10:00 AM - 10:50 AM  
     Course: CS191B
     Instructor: Zein el Din  
     Capacity: 50/60 (83.33% full)  
 
-
-Room: Royall (201)  
-    Class Time: 10:00 AM - 10:50 AM  
-    Course: CS291
-    Instructor: Hare  
-    Capacity: 50/50 (100.00% full)  
-
     Class Time: 12:00 PM - 12:50 PM  
-    Course: CS201
-    Instructor: Zein el Din  
-    Capacity: 50/50 (100.00% full)  
+    Course: CS449
+    Instructor: Xu  
+    Capacity: 60/60 (100.00% full)  
 
-    Class Time: 01:00 PM - 01:50 PM  
-    Course: CS394
-    Instructor: Song  
-    Capacity: 20/50 (40.00% full)  
+
+Room: FH (310)  
+    Class Time: 10:00 AM - 10:50 AM  
+    Course: CS201
+    Instructor: Hare  
+    Capacity: 50/108 (46.30% full)  
+
+    Class Time: 02:00 PM - 02:50 PM  
+    Course: CS451
+    Instructor: Xu  
+    Capacity: 100/108 (92.59% full)  
 
 
 Room: Haag (301)  
-    Class Time: 01:00 PM - 01:50 PM  
+    Class Time: 12:00 PM - 12:50 PM  
     Course: CS303
     Instructor: Hare  
     Capacity: 60/75 (80.00% full)  
+
+    Class Time: 01:00 PM - 01:50 PM  
+    Course: CS291
+    Instructor: Hare  
+    Capacity: 50/75 (66.67% full)  
 
 
 Room: FH (216)  
     Class Time: 11:00 AM - 11:50 AM  
     Course: CS304
-    Instructor: Hare  
+    Instructor: Zein el Din  
     Capacity: 25/30 (83.33% full)  
+
+
+Room: Katz (003)  
+    Class Time: 01:00 PM - 01:50 PM  
+    Course: CS394
+    Instructor: Xu  
+    Capacity: 20/45 (44.44% full)  
 

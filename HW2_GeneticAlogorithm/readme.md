@@ -14,100 +14,100 @@ main.py sets up the GA and has functions to define how the GA should mutate or c
 ## Example Solution
 
 - Population Size: 1000  
-- Minimum Generations: 100  
+- Minimum Generations: 200  
 - Minimum Improvement: 0.01  
 
-<img src="https://github.com/nosv1/seagraves_intro_to_ai/blob/master/HW2_GeneticAlogorithm/GA%201000x100%200o01.png?raw=true">
+<img src="https://github.com/nosv1/seagraves_intro_to_ai/blob/master/HW2_GeneticAlogorithm/GA%201000x150%200o01.png?raw=true">
 
 Alternate views of the solution can be found [here](https://github.com/nosv1/seagraves_intro_to_ai/tree/master/HW2_GeneticAlogorithm/Solution).
 
-## **End Fitness: 16.0** 
+## **End Fitness: 16.20** 
 
 
 Course: CS101A  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Xu  
-Room: Haag (301) 50/75 (66.67% full)  
+Class Time: 12:00 PM - 12:50 PM  
+Instructor: Zein el Din  
+Room: Royall (201) 50/50 (100.00% full)  
 
 Course: CS101B  
 Class Time: 11:00 AM - 11:50 AM  
-Instructor: Gharibi  
-Room: Haag (201) 50/60 (83.33% full)  
+Instructor: Hare  
+Room: Bloch (119) 50/60 (83.33% full)  
 
 Course: CS191A  
-Class Time: 10:00 AM - 10:50 AM  
-Instructor: Gharibi  
-Room: FH (310) 50/108 (46.30% full)  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Zein el Din  
+Room: Bloch (119) 50/60 (83.33% full)  
 
 Course: CS191B  
-Class Time: 12:00 PM - 12:50 PM  
-Instructor: Hare  
-Room: Royall (201) 50/50 (100.00% full)  
+Class Time: 10:00 AM - 10:50 AM  
+Instructor: Zein el Din  
+Room: Haag (201) 50/60 (83.33% full)  
 
 Course: CS201  
 Class Time: 10:00 AM - 10:50 AM  
 Instructor: Hare  
-Room: Royall (201) 50/50 (100.00% full)  
+Room: FH (310) 50/108 (46.30% full)  
 
 Course: CS291  
-Class Time: 02:00 PM - 02:50 PM  
-Instructor: Xu  
-Room: Haag (201) 50/60 (83.33% full)  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Hare  
+Room: Haag (301) 50/75 (66.67% full)  
 
 Course: CS303  
-Class Time: 03:00 PM - 03:50 PM  
+Class Time: 12:00 PM - 12:50 PM  
 Instructor: Hare  
 Room: Haag (301) 60/75 (80.00% full)  
 
 Course: CS304  
 Class Time: 11:00 AM - 11:50 AM  
-Instructor: Gharibi  
+Instructor: Zein el Din  
 Room: FH (216) 25/30 (83.33% full)  
 
 Course: CS394  
-Class Time: 11:00 AM - 11:50 AM  
-Instructor: Song  
+Class Time: 01:00 PM - 01:50 PM  
+Instructor: Xu  
 Room: Katz (003) 20/45 (44.44% full)  
 
 Course: CS449  
 Class Time: 12:00 PM - 12:50 PM  
-Instructor: Uddin  
-Room: Royall (206) 60/75 (80.00% full)  
+Instructor: Xu  
+Room: Haag (201) 60/60 (100.00% full)  
 
 Course: CS451  
-Class Time: 01:00 PM - 01:50 PM  
-Instructor: Hare  
-Room: Royall (201) 100/50 (200.00% full)  
+Class Time: 02:00 PM - 02:50 PM  
+Instructor: Xu  
+Room: FH (310) 100/108 (92.59% full)    
 
 </br>
 
 ## Checks
-same_room_same_time: 0.00  
+same_room_same_time: 0 * -0.5 = -0.0  
 
-room_too_small: -0.50  
-room_3x_too_big: 0.00  
-room_6x_too_big: 0.00  
-room_size_sufficient: 3.00  
+room_too_small: 0 * -0.5 = -0.0  
+room_3x_too_big: 0 * -0.2 = -0.0  
+room_6x_too_big: 0 * -0.4 = -0.0  
+room_size_sufficient: 11 * 0.3 = 3.3  
 
-preferred_instructor: 3.00  
-other_instructor: 0.60  
-other_faculty: -0.20  
+preferred_instructor: 10 * 0.5 = 5.0/5.5  
+other_instructor: 1 * 0.2 = 0.2  
+other_faculty: 0 * -0.1 = -0.0  
 
-instructor_one_class_one_time: 2.00  
-instructor_multiple_classes_one_time: -0.20  
-instructor_more_than_4_classes: 0.00  
-instructor_less_than_3_classes: -0.80  
-instructor_consecutive_slots: 4.50  
-instructor_consecutive_slots_far_away_rooms: 0.00  
+instructor_one_class_one_time: 11 * 0.2 = 2.2/2.2  
+instructor_multiple_classes_one_time: 0 * -0.2 = -0.0  
+instructor_more_than_4_classes: 0 * -0.5 = -0.0  
+instructor_less_than_3_classes: 0 * -0.4 = -0.0  
+instructor_consecutive_slots: 8 * 0.5 = 4.0/4.0  
+instructor_consecutive_slots_far_away_rooms: 0 * -0.4 = -0.0  
 
-cs_101_4_hours_apart: 0.00  
-cs_101_same_time: 0.00  
-cs_191_4_hours_apart: 0.00  
-cs_191_same_time: 0.00  
-cs_101_191_consecutive: 1.50  
-sections_consecutive_far_away_rooms: 0.00  
-cs_101_191_one_hour_apart: 0.00  
-cs_101_191_same_time: 0.00  
+cs_101_4_hour_gap: 0 * 0.5 = 0.0  
+cs_101_same_time: 0 * -0.5 = -0.0  
+cs_191_4_hour_gap: 0 * 0.5 = 0.0  
+cs_191_same_time: 0 * -0.5 = -0.0  
+cs_101_191_consecutive: 2 * 0.5 = 1.0/2.0  
+sections_consecutive_far_away_rooms: 0 * -0.4 = -0.0  
+cs_101_191_one_hour_gap: 2 * 0.25 = 0.5  
+cs_101_191_same_time: 0 * -0.25 = -0.0  
 
 ---
 

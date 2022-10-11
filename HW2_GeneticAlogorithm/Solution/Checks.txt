@@ -3,8 +3,8 @@ room_too_small: 0 * -0.5 = -0.0
 room_3x_too_big: 0 * -0.2 = -0.0  
 room_6x_too_big: 0 * -0.4 = -0.0  
 room_size_sufficient: 11 * 0.3 = 3.3  
-preferred_instructor: 11 * 0.5 = 5.5  
-other_instructor: 0 * 0.2 = 0.0  
+preferred_instructor: 10 * 0.5 = 5.0  
+other_instructor: 1 * 0.2 = 0.2  
 other_faculty: 0 * -0.1 = -0.0  
 instructor_one_class_one_time: 11 * 0.2 = 2.2  
 instructor_multiple_classes_one_time: 0 * -0.2 = -0.0  
@@ -20,4 +20,4 @@ cs_101_191_consecutive: 2 * 0.5 = 1.0
 sections_consecutive_far_away_rooms: 0 * -0.4 = -0.0  
 cs_101_191_one_hour_gap: 2 * 0.25 = 0.5  
 cs_101_191_same_time: 0 * -0.25 = -0.0  
-Fitness: 16.50
+Fitness: 16.20

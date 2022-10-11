@@ -251,13 +251,13 @@ def evaluate_chromosome(
     if abs(cs101_delta) == timedelta(hours=0):
         chromosome.checks.cs_101_same_time.count += 1
 
-    elif abs(cs101_delta) >= timedelta(hours=4):
+    elif abs(cs101_delta) > timedelta(hours=4):
         chromosome.checks.cs_101_4_hour_gap.count += 1
-
+ 
     if abs(cs191_delta) == timedelta(hours=0):
         chromosome.checks.cs_191_same_time.count += 1
     
-    elif abs(cs191_delta) >= timedelta(hours=4):
+    elif abs(cs191_delta) > timedelta(hours=4):
         chromosome.checks.cs_191_4_hour_gap.count += 1
 
     for section_1, section_2 in section_combinations:
@@ -625,7 +625,7 @@ def main(args: list[str]) -> None:
 
     # run the ga
     minimum_improvement: float = 0.01
-    maximum_generations: int = 100
+    maximum_generations: int = 150
     print(f"\nStarting GA...")
     print(f"Population Size: {scheduling_ga.population_size}")
     print(f"Mutation Rate: {scheduling_ga.mutation_rate}")
@@ -664,7 +664,7 @@ def main(args: list[str]) -> None:
         standard_deviation_subplot.plot(generations, scheduling_ga.standard_deviation, "ro")
 
         # break condition
-        if minimum_improvement > improvement and generations >= maximum_generations:
+        if minimum_improvement > abs(improvement) and generations >= maximum_generations:
             break
 
         scheduling_ga.calculate_probabilities()
