@@ -9,6 +9,11 @@ def clean_data(data: pd.DataFrame) -> pd.DataFrame:
     data = data.astype(float)
     return data
 
+def update_labels(data: pd.DataFrame) -> pd.DataFrame:
+    """ Updates the labels to be 0 or 1 """
+    data['num'] = data['num'].apply(lambda x: 1 if x > 0 else 0)
+    return data
+
 def normalize(data: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
     for col in data.columns:
         if col in columns:
@@ -33,13 +38,14 @@ def main() -> None:
     # age,sex,cp,trestbps,chol,fbs,restecg,thalach,exang,oldpeak,slope,ca,thal,num
     data: pd.DataFrame = pd.read_csv('heart-data/processed_cleveland.csv')
     data = clean_data(data)
+    data = update_labels(data)
     data = normalize(data, [
         "age", "trestbps", "chol", "thalach", "oldpeak", "ca"])
         
     # DON'T TOUCH VALIDATION DATA UNTIL THE VERY VERY END
     validation_data, data = get_validation_data(data, 0.1)
 
-    train_data: pd.DataFrame = data.sample(frac=0.8)
+    train_data: pd.DataFrame = data.sample(frac=0.8, random_state=1)
     test_data: pd.DataFrame = data.drop(train_data.index)
     
     train_labels: pd.DataFrame = train_data.pop('num')
@@ -50,18 +56,21 @@ def main() -> None:
         tf.keras.layers.Dense(
             13, activation='relu', input_shape=[len(train_data.keys())]),
         tf.keras.layers.Dense(8, activation='relu'),
-        tf.keras.layers.Dense(8, activation='relu'),
-        tf.keras.layers.Dense(5, activation='relu'),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(4, activation='relu'),
+        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dense(1, activation='sigmoid')
     ])
 
     model.compile(
         optimizer='adam',
-        loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        loss='binary_crossentropy',
         metrics=['accuracy'])
 
     model.fit(
         train_data, train_labels,
-        epochs=200,
+        epochs=400,
+        batch_size=20,
     )
 
     test_loss, test_accuracy = model.evaluate(test_data, test_labels, verbose=2)
